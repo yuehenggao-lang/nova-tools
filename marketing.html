@@ -223,11 +223,11 @@ function renderResults(content) {
 
     const card = document.createElement('div');
     card.className = 'platform-card';
-    const copyText = p.copyFn(c);
+    const copyContent = p.copyFn(c);
     card.innerHTML = `
       <div class="platform-header ${p.cls}">${p.label}</div>
       <div class="platform-body">${fieldsHtml}</div>
-      <div class="copy-row"><button class="btn-copy" onclick="copyText(this, ${JSON.stringify(copyText)})">复制</button></div>`;
+      <div class="copy-row"><button class="btn-copy" onclick="copyText(this, ${JSON.stringify(copyContent)})">复制</button></div>`;
     grid.appendChild(card);
   });
 
