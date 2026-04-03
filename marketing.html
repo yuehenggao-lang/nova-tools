@@ -158,7 +158,7 @@ async function generate() {
     if (mode === 'case')  payload.clientName = clientName;
     if (mode === 'topic') payload.topic = topic;
 
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const res = await fetch(GAS_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)));
     const data = await res.json();
     clearTimeout(timer);
 
