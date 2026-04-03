@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketing — Nova Stage Immigration</title>
+<style>
+:root{
+  --blue:#1d4ed8;--blue-light:#eff6ff;--blue-mid:#dbeafe;
+  --gold:#c8922a;--green:#16a34a;--red:#dc2626;
+  --gray:#6b7280;--border:#e5e7eb;--radius:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f9fafb;color:#111827}
+.brand-header{background:#fff;border-bottom:3px solid var(--gold);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.brand-title{font-weight:700;font-size:16px;color:#111827}
+.brand-rcic{font-size:13px;color:var(--gray)}
+.container{max-width:1200px;margin:24px auto;padding:0 20px}
+.section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden}
+.section-header{background:var(--blue-light);border-bottom:1px solid var(--blue-mid);padding:12px 16px;font-weight:600;color:var(--blue);font-size:13px}
+.section-body{padding:20px}
+.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+label{font-size:12px;color:var(--gray);font-weight:500}
+input,select{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;width:100%;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--blue)}
+.btn{padding:9px 20px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover:not(:disabled){background:#1e40af}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-copy{background:#f3f4f6;color:#374151;border:1px solid var(--border);padding:5px 12px;font-size:12px;font-weight:500;border-radius:6px;cursor:pointer}
+.btn-copy:hover{background:#e5e7eb}
+.btn-copy.copied{background:#f0fdf4;color:var(--green);border-color:#bbf7d0}
+.status{padding:12px 16px;border-radius:6px;font-size:13px;margin-bottom:16px;display:none}
+.status.info{background:#eff6ff;color:var(--blue);border:1px solid var(--blue-mid)}
+.status.success{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.status.error{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.platform-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.platform-header{padding:10px 14px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.platform-header.script{background:#f5f3ff;color:#5b21b6}
+.platform-header.weixin{background:#f0fdf4;color:#15803d}
+.platform-header.xiaohongshu{background:#fff1f2;color:#be123c}
+.platform-header.moments{background:#fffbeb;color:#92400e}
+.platform-body{padding:14px;font-size:13px;line-height:1.6}
+.field-label{font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;margin-top:10px}
+.field-label:first-child{margin-top:0}
+.field-value{color:#111827;white-space:pre-wrap;word-break:break-word}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tag{background:#f3f4f6;border:1px solid var(--border);border-radius:12px;padding:2px 8px;font-size:11px;color:#374151}
+.copy-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+.history-list{list-style:none;padding:0}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.history-item:last-child{border-bottom:none}
+.history-link{color:var(--blue);cursor:pointer;text-decoration:none;background:none;border:none;font-size:13px;padding:0;text-align:left}
+.history-link:hover{text-decoration:underline}
+.history-meta{color:var(--gray);font-size:12px}
+.hidden{display:none}
+@media(max-width:900px){.results-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.results-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="brand-header">
+  <div class="brand-title">Marketing — Nova Stage Immigration</div>
+  <div class="brand-rcic">Yueheng Gao, RCIC | #R534273</div>
+</div>
+
+<div class="container">
+
+<!-- 触发表单 -->
+<div class="section">
+  <div class="section-header">生成文案</div>
+  <div class="section-body">
+    <div class="form-row">
+      <div class="form-group" style="max-width:220px">
+        <label>内容类型</label>
+        <select id="mode" onchange="onModeChange()">
+          <option value="news">今日移民新闻</option>
+          <option value="case">客户成功案例</option>
+          <option value="topic">指定主题 / 判例</option>
+        </select>
+      </div>
+      <div class="form-group hidden" id="clientNameGroup">
+        <label>客户姓名</label>
+        <input type="text" id="clientName" placeholder="例如：Jason Wong">
+      </div>
+      <div class="form-group hidden" id="topicGroup">
+        <label>主题 / 关键词</label>
+        <input type="text" id="topicInput" placeholder="例如：LMIA exemption C11">
+      </div>
+      <div>
+        <button class="btn btn-primary" id="generateBtn" onclick="generate()">生成文案</button>
+      </div>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<!-- 结果 -->
+<div class="section" id="resultsSection" style="display:none">
+  <div class="section-header">生成结果</div>
+  <div class="section-body">
+    <div class="results-grid" id="resultsGrid"></div>
+  </div>
+</div>
+
+<!-- 历史记录 -->
+<div class="section">
+  <div class="section-header">历史记录（最近 30 条）</div>
+  <div class="section-body">
+    <ul class="history-list" id="historyList">
+      <li style="color:var(--gray);font-size:13px;padding:8px 0">加载中…</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxY7hR2ok5V4FDnSpsykPE_13a8bgLIE6dqesEjqXsLKq5GIceB5g7NVQbWDPI2MZCr/exec';
+
+function onModeChange() {
+  const mode = document.getElementById('mode').value;
+  document.getElementById('clientNameGroup').classList.toggle('hidden', mode !== 'case');
+  document.getElementById('topicGroup').classList.toggle('hidden', mode !== 'topic');
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = 'status ' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function generate() {
+  const mode = document.getElementById('mode').value;
+  const clientName = document.getElementById('clientName').value.trim();
+  const topic = document.getElementById('topicInput').value.trim();
+
+  if (mode === 'case' && !clientName) { setStatus('error', '请输入客户姓名'); return; }
+  if (mode === 'topic' && !topic)     { setStatus('error', '请输入主题或关键词'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+
+  const steps = {
+    news:  ['⏳ 正在搜索今日移民新闻…', '✍️ 正在生成文案…'],
+    case:  ['⏳ 正在读取客户档案…',     '✍️ 正在生成文案…'],
+    topic: ['⏳ 正在搜索相关资料…',     '✍️ 正在生成文案…']
+  };
+  setStatus('info', steps[mode][0]);
+  const timer = setTimeout(() => { if (btn.disabled) setStatus('info', steps[mode][1]); }, 5000);
+
+  try {
+    const payload = { mode };
+    if (mode === 'case')  payload.clientName = clientName;
+    if (mode === 'topic') payload.topic = topic;
+
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    clearTimeout(timer);
+
+    if (!data.ok) {
+      if (data.reason === 'no_content') {
+        setStatus('info', '📋 今日暂无新资讯，无文案生成');
+      } else {
+        setStatus('error', '生成失败：' + (data.error || '未知错误'));
+      }
+      btn.disabled = false;
+      return;
+    }
+
+    setStatus('success', '✅ 文案生成完成');
+    renderResults(data.content);
+    loadHistory();
+  } catch (err) {
+    clearTimeout(timer);
+    setStatus('error', '请求失败：' + err.message);
+  }
+  btn.disabled = false;
+}
+
+function renderResults(content) {
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+
+  const platforms = [
+    {
+      key: 'script', cls: 'script', label: '🎬 口播文案',
+      fields: [{ label: '文案', key: 'text' }],
+      copyFn: c => c.text
+    },
+    {
+      key: 'weixin', cls: 'weixin', label: '📱 视频号',
+      fields: [{ label: '封面词', key: 'cover' }, { label: '标题', key: 'title' }, { label: '正文', key: 'body' }],
+      copyFn: c => `【${c.cover}】${c.title}\n\n${c.body}\n\n${(c.tags||[]).map(t=>'#'+t).join(' ')}`
+    },
+    {
+      key: 'xiaohongshu', cls: 'xiaohongshu', label: '📕 小红书',
+      fields: [{ label: '封面词', key: 'cover' }, { label: '标题', key: 'title' }, { label: '正文', key: 'body' }],
+      copyFn: c => `${c.title}\n\n${c.body}\n\n${(c.tags||[]).map(t=>'#'+t).join(' ')}`
+    },
+    {
+      key: 'moments', cls: 'moments', label: '💬 朋友圈',
+      fields: [{ label: '正文', key: 'body' }],
+      copyFn: c => c.body
+    }
+  ];
+
+  platforms.forEach(p => {
+    const c = content[p.key];
+    if (!c) return;
+
+    let fieldsHtml = p.fields.map(f =>
+      `<div class="field-label">${f.label}</div><div class="field-value">${escHtml(c[f.key] || '')}</div>`
+    ).join('');
+
+    if (c.tags && c.tags.length) {
+      fieldsHtml += `<div class="field-label">标签</div><div class="tags">${c.tags.map(t=>`<span class="tag">#${escHtml(t)}</span>`).join('')}</div>`;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'platform-card';
+    const copyText = p.copyFn(c);
+    card.innerHTML = `
+      <div class="platform-header ${p.cls}">${p.label}</div>
+      <div class="platform-body">${fieldsHtml}</div>
+      <div class="copy-row"><button class="btn-copy" onclick="copyText(this, ${JSON.stringify(copyText)})">复制</button></div>`;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('resultsSection').style.display = '';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(GAS_URL + '?action=history');
+    const data = await res.json();
+    const list = document.getElementById('historyList');
+    if (!data.ok || !data.history || !data.history.length) {
+      list.innerHTML = '<li style="color:var(--gray);font-size:13px;padding:8px 0">暂无历史记录</li>';
+      return;
+    }
+    window._history = data.history;
+    list.innerHTML = data.history.map((h, i) => {
+      const d = new Date(h.date).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+      const modeLabel = { news:'新闻', case:'案例', topic:'主题' }[h.mode] || h.mode;
+      return `<li class="history-item">
+        <button class="history-link" onclick="loadHistoryItem(${i})">[${modeLabel}] ${escHtml(h.topic || '')}</button>
+        <span class="history-meta">${d}</span>
+      </li>`;
+    }).join('');
+  } catch (err) {
+    document.getElementById('historyList').innerHTML = '<li style="color:var(--gray);font-size:13px;padding:8px 0">历史加载失败</li>';
+  }
+}
+
+function loadHistoryItem(i) {
+  const entry = (window._history || [])[i];
+  if (!entry || !entry.result) return;
+  renderResults(entry.result);
+  setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+loadHistory();
+</script>
+</body>
+</html>
