@@ -212,15 +212,22 @@ const NLM_PROMPT_TEMPLATE = `你好，请帮我为以下移民新闻/政策生�
 3. 小红书正文（120-180字）+ 5-8个标签
 4. 朋友圈（50-80字）`;
 
-async function useAsTopicForAI(url, title, target) {
+async function useAsTopicForAI(url, title, target, cachedSnippet) {
   const btn = event.target;
   const origText = btn.textContent;
   btn.textContent = '抓取中...';
   btn.disabled = true;
   try {
-    const res = await fetch(GAS_URL + '?action=extract&url=' + encodeURIComponent(url));
-    const data = await res.json();
-    const articleContent = data.ok ? data.content : ('（抓取失败，请直接使用原文链接）\n' + url);
+    let articleContent;
+    const isXPost = /^https?:\/\/(x|twitter)\.com\//i.test(url);
+    if (isXPost && cachedSnippet) {
+      // X posts can't be fetched — use the tweet text we already have
+      articleContent = '【推文原文】\n' + cachedSnippet;
+    } else {
+      const res = await fetch(GAS_URL + '?action=extract&url=' + encodeURIComponent(url));
+      const data = await res.json();
+      articleContent = data.ok ? data.content : ('（抓取失败，请直接使用原文链接）\n' + url);
+    }
     const prompt = NLM_PROMPT_TEMPLATE.replace('{ARTICLE_CONTENT}',
       '原文链接：' + url + '\n\n' + articleContent.slice(0, 6000));
     await navigator.clipboard.writeText(prompt);
@@ -237,7 +244,11 @@ async function useAsTopicForAI(url, title, target) {
   setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 5000);
 }
 
+// Store items in JS array so buttons can reference by index (safe for any content)
+let _digestItems = [];
+
 function renderNewsDigest(items) {
+  _digestItems = items || [];
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
   document.getElementById('resultsSection').style.display = '';
@@ -248,10 +259,9 @@ function renderNewsDigest(items) {
   }
   const container = document.createElement('div');
   container.style.cssText = 'grid-column:1/-1;display:flex;flex-direction:column;gap:12px;';
-  items.forEach(function(item) {
+  items.forEach(function(item, idx) {
     const card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;';
-    // Format published_date: "2026-04-04T14:30:00Z" → "2026-04-04 14:30 UTC"
     let dateLabel = '';
     if (item.published_date) {
       const raw = item.published_date.replace('Z','').replace('T',' ');
@@ -268,15 +278,24 @@ function renderNewsDigest(items) {
         <div style="font-size:12px;color:#374151;line-height:1.6;background:#f9fafb;border-left:3px solid #d1d5db;padding:8px 10px;border-radius:0 4px 4px 0;">${escHtml((item.snippet||'').slice(0,200) + ((item.snippet||'').length > 200 ? '…' : ''))}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-        <button onclick="useAsTopicForAI('${escHtml(item.url)}', '${escHtml(item.title.replace(/'/g,"&#39;"))}', 'claude')"
+        <button data-idx="${idx}" data-target="claude"
           style="white-space:nowrap;padding:7px 14px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;">
           → Claude.ai（推荐）
         </button>
-        <button onclick="useAsTopicForAI('${escHtml(item.url)}', '${escHtml(item.title.replace(/'/g,"&#39;"))}', 'nlm')"
+        <button data-idx="${idx}" data-target="nlm"
           style="white-space:nowrap;padding:7px 14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;">
           → NotebookLM
         </button>
       </div>`;
+    // Attach click handlers via JS (no inline escaping issues)
+    card.querySelectorAll('button[data-idx]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const i = parseInt(this.dataset.idx);
+        const t = this.dataset.target;
+        const it = _digestItems[i];
+        useAsTopicForAI(it.url, it.title, t, it.snippet || '');
+      });
+    });
     container.appendChild(card);
   });
   grid.appendChild(container);
