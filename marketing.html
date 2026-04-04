@@ -186,6 +186,14 @@ function renderResults(content) {
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
 
+  // Show sources if present
+  if (content.sources && content.sources.length) {
+    const srcDiv = document.createElement('div');
+    srcDiv.style.cssText = 'grid-column:1/-1;font-size:12px;color:#666;margin-bottom:4px;';
+    srcDiv.innerHTML = '📰 信息来源：' + content.sources.map(s => escHtml(s)).join(' · ');
+    grid.appendChild(srcDiv);
+  }
+
   const platforms = [
     {
       key: 'script', cls: 'script', label: '🎬 口播文案',
