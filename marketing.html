@@ -234,6 +234,8 @@ async function useAsTopicForNotebookLM(url, title) {
 function renderNewsDigest(items) {
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
+  document.getElementById('resultsSection').style.display = '';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (!items || items.length === 0) {
     grid.innerHTML = '<p style="color:#666;padding:16px;">暂无资讯</p>';
     return;
