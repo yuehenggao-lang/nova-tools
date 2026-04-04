@@ -251,11 +251,14 @@ function renderNewsDigest(items) {
   items.forEach(function(item) {
     const card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;';
+    const dateLabel = item.published_date ? item.published_date.slice(0, 10) : '';
     card.innerHTML = `
       <div style="flex:1;min-width:0;">
         <a href="${escHtml(item.url)}" target="_blank" rel="noopener"
            style="font-weight:600;color:#1a73e8;font-size:14px;text-decoration:none;display:block;margin-bottom:4px;">${escHtml(item.title)}</a>
-        <div style="font-size:11px;color:#888;margin-bottom:6px;">${escHtml(item.source)}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">
+          ${escHtml(item.source)}${dateLabel ? ' &nbsp;·&nbsp; <span style="color:#ef4444;font-weight:600;">' + escHtml(dateLabel) + '</span>' : ''}
+        </div>
         <div style="font-size:12px;color:#555;line-height:1.5;">${escHtml(item.snippet)}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
