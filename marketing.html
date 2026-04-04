@@ -164,10 +164,18 @@ async function generate() {
 
     if (!data.ok) {
       if (data.reason === 'no_content') {
-        setStatus('info', '📋 今日暂无新资讯，无文案生成');
+        setStatus('info', '📋 今日暂无新资讯');
       } else {
         setStatus('error', '生成失败：' + (data.error || '未知错误'));
       }
+      btn.disabled = false;
+      return;
+    }
+
+    // Mode A: news digest — show list for user to pick
+    if (data.mode === 'news_digest') {
+      setStatus('success', '✅ 找到 ' + data.items.length + ' 条资讯，选择感兴趣的发送到 NotebookLM');
+      renderNewsDigest(data.items);
       btn.disabled = false;
       return;
     }
@@ -180,6 +188,75 @@ async function generate() {
     setStatus('error', '请求失败：' + err.message);
   }
   btn.disabled = false;
+}
+
+const NLM_PROMPT_TEMPLATE = `你好，请帮我为以下移民新闻/政策生成一个中文视频口播脚本。
+
+【我的背景】
+我叫 Steven，是加拿大持牌移民顾问（RCIC，2019年执照）和安省注册 Paralegal（2026年）。
+目标受众：在加拿大的中文移民群体，正在申请或考虑移民。
+
+【视频风格要求】
+- 开头固定：大家好，我是 Steven。
+- 语气：像朋友聊天，但有专业深度，不晦涩
+- 不只讲"是什么"，要讲"为什么重要"和"对你意味着什么"
+- 结尾 soft sale：自然引导私信咨询，不推销
+- 长度：500-600字（约2分钟视频）
+
+【原文内容】
+{ARTICLE_CONTENT}
+
+【请生成】
+1. 口播文案（500-600字）
+2. 视频号正文（150-200字）
+3. 小红书正文（120-180字）+ 5-8个标签
+4. 朋友圈（50-80字）`;
+
+async function useAsTopicForNotebookLM(url, title) {
+  const btn = event.target;
+  btn.textContent = '抓取中...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(GAS_URL + '?action=extract&url=' + encodeURIComponent(url));
+    const data = await res.json();
+    const articleContent = data.ok ? data.content : ('（抓取失败，请直接使用原文链接）\n' + url);
+    const prompt = NLM_PROMPT_TEMPLATE.replace('{ARTICLE_CONTENT}',
+      '原文链接：' + url + '\n\n' + articleContent.slice(0, 6000));
+    await navigator.clipboard.writeText(prompt);
+    window.open('https://notebooklm.google.com', '_blank');
+    btn.textContent = '✅ 已复制，NotebookLM 已打开';
+  } catch (err) {
+    btn.textContent = '❌ 失败：' + err.message;
+  }
+  setTimeout(() => { btn.textContent = '用此选题 → NotebookLM'; btn.disabled = false; }, 4000);
+}
+
+function renderNewsDigest(items) {
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  if (!items || items.length === 0) {
+    grid.innerHTML = '<p style="color:#666;padding:16px;">暂无资讯</p>';
+    return;
+  }
+  const container = document.createElement('div');
+  container.style.cssText = 'grid-column:1/-1;display:flex;flex-direction:column;gap:12px;';
+  items.forEach(function(item) {
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;';
+    card.innerHTML = `
+      <div style="flex:1;min-width:0;">
+        <a href="${escHtml(item.url)}" target="_blank" rel="noopener"
+           style="font-weight:600;color:#1a73e8;font-size:14px;text-decoration:none;display:block;margin-bottom:4px;">${escHtml(item.title)}</a>
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">${escHtml(item.source)}</div>
+        <div style="font-size:12px;color:#555;line-height:1.5;">${escHtml(item.snippet)}</div>
+      </div>
+      <button onclick="useAsTopicForNotebookLM('${escHtml(item.url)}', '${escHtml(item.title.replace(/'/g,"&#39;"))}')"
+        style="white-space:nowrap;padding:8px 14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;flex-shrink:0;">
+        用此选题 → NotebookLM
+      </button>`;
+    container.appendChild(card);
+  });
+  grid.appendChild(container);
 }
 
 function renderResults(content, sources) {
