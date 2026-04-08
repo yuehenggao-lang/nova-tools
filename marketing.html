@@ -174,8 +174,23 @@ async function generate() {
 
     // Mode A: news digest — show list for user to pick
     if (data.mode === 'news_digest') {
-      setStatus('success', '✅ 找到 ' + data.items.length + ' 条资讯，选择感兴趣的发送到 NotebookLM');
+      setStatus('success', '✅ 找到 ' + data.items.length + ' 条资讯，选择感兴趣的发送到 Claude.ai / NotebookLM');
       renderNewsDigest(data.items);
+      loadHistory();
+      btn.disabled = false;
+      return;
+    }
+    if (data.mode === 'topic_digest') {
+      setStatus('success', '✅ 找到 ' + data.items.length + ' 条相关资料，选择感兴趣的发送到 Claude.ai');
+      renderNewsDigest(data.items);
+      loadHistory();
+      btn.disabled = false;
+      return;
+    }
+    if (data.mode === 'case_digest') {
+      setStatus('success', '✅ 已读取客户档案：' + escHtml(data.clientName));
+      renderCaseDigest(data);
+      loadHistory();
       btn.disabled = false;
       return;
     }
@@ -255,6 +270,45 @@ async function useAsTopicForAI(url, title, target, cachedSnippet) {
 
 // Store items in JS array so buttons can reference by index (safe for any content)
 let _digestItems = [];
+
+function renderCaseDigest(data) {
+  _digestItems = [];
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  document.getElementById('resultsSection').style.display = '';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const casePrompt = `请根据以下客户档案，为Nova Stage Immigration（Steven Gao, RCIC #R534273）生成营销文案：\n\n` +
+    data.rawText.slice(0, 5000) +
+    `\n\n请生成（严格按以下格式）：\n1. 口播文案（300-400字）：钩子开场 → 案例还原 → 法律分析(✅分点) → 结果🎉 → 💡核心教训 → CTA\n` +
+    `2. 小红书图文（120-180字）+ 5-8个标签\n3. 朋友圈（50-80字）\n\n` +
+    `语气：像有法律背景的朋友分析案子，不要用"大家好我是Steven"开头，Emoji只用 🇨🇦 ✅ 💡 🎉`;
+
+  const container = document.createElement('div');
+  container.style.cssText = 'grid-column:1/-1;';
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;';
+  const preview = escHtml(data.rawText.slice(0, 800)) + (data.rawText.length > 800 ? '\n…（共 ' + data.rawText.length + ' 字）' : '');
+  card.innerHTML = `
+    <div style="font-weight:600;font-size:14px;margin-bottom:12px;color:#111;">📋 ${escHtml(data.clientName)} 案例档案</div>
+    <div style="font-size:12px;color:#555;background:#f9fafb;border-left:3px solid #d1d5db;padding:10px 12px;border-radius:0 4px 4px 0;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-bottom:16px;">${preview}</div>
+    <button id="caseToClaude" style="padding:8px 18px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">→ 发送到 Claude.ai 生成文案</button>`;
+  card.querySelector('#caseToClaude').addEventListener('click', async function() {
+    const btn = this;
+    btn.textContent = '复制中...';
+    btn.disabled = true;
+    try {
+      await navigator.clipboard.writeText(casePrompt);
+      window.open('https://claude.ai/new', '_blank');
+      btn.textContent = '✅ 已复制 → Claude.ai 已打开，直接粘贴即可';
+    } catch (e) {
+      btn.textContent = '❌ 失败：' + e.message;
+    }
+    setTimeout(() => { btn.textContent = '→ 发送到 Claude.ai 生成文案'; btn.disabled = false; }, 5000);
+  });
+  container.appendChild(card);
+  grid.appendChild(container);
+}
 
 function renderNewsDigest(items) {
   _digestItems = items || [];
@@ -410,7 +464,13 @@ async function loadHistory() {
 function loadHistoryItem(i) {
   const entry = (window._history || [])[i];
   if (!entry || !entry.result) return;
-  renderResults(entry.result);
+  if ((entry.mode === 'news' || entry.mode === 'topic') && Array.isArray(entry.result)) {
+    renderNewsDigest(entry.result);
+  } else if (entry.mode === 'case' && typeof entry.result === 'string') {
+    renderCaseDigest({ clientName: entry.topic.replace(' 成功案例', ''), rawText: entry.result });
+  } else {
+    renderResults(entry.result);
+  }
   setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
