@@ -88,8 +88,19 @@ input:focus,select:focus{border-color:var(--blue)}
         <input type="text" id="clientName" placeholder="例如：Jason Wong">
       </div>
       <div class="form-group hidden" id="topicGroup">
-        <label>主题 / 关键词</label>
-        <input type="text" id="topicInput" placeholder="例如：LMIA exemption C11">
+        <label>内容角度 / 关键词</label>
+        <input type="text" id="topicInput" placeholder="例如：CEC被拒后司法审查，哪些法律理由最有效">
+        <div style="margin-top:6px;display:flex;gap:14px;align-items:center;">
+          <label style="font-size:12px;color:#555;font-weight:500;">搜索范围：</label>
+          <label style="font-size:12px;color:#374151;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="radio" name="searchType" value="caselaw" checked style="accent-color:#7c3aed;">
+            ⚖️ 判例+法规
+          </label>
+          <label style="font-size:12px;color:#374151;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input type="radio" name="searchType" value="news" style="accent-color:#7c3aed;">
+            📰 新闻
+          </label>
+        </div>
       </div>
       <div>
         <button class="btn btn-primary" id="generateBtn" onclick="generate()">生成文案</button>
@@ -157,7 +168,11 @@ async function generate() {
   try {
     const payload = { mode };
     if (mode === 'case')  payload.clientName = clientName;
-    if (mode === 'topic') payload.topic = topic;
+    if (mode === 'topic') {
+      payload.topic = topic;
+      const st = document.querySelector('input[name="searchType"]:checked');
+      payload.searchType = st ? st.value : 'caselaw';
+    }
 
     const res = await fetch(GAS_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)));
     const data = await res.json();
@@ -182,8 +197,10 @@ async function generate() {
       return;
     }
     if (data.mode === 'topic_digest') {
-      setStatus('success', '✅ 找到 ' + data.items.length + ' 条相关资料，选择感兴趣的发送到 Claude.ai');
-      renderNewsDigest(data.items);
+      const isCaseLaw = data.subtype === 'caselaw';
+      const label = isCaseLaw ? '判例/法规素材' : '相关资料';
+      setStatus('success', '✅ 找到 ' + data.items.length + ' 条' + label + '，选择感兴趣的发送到 Claude.ai');
+      renderNewsDigest(data.items, isCaseLaw);
       loadHistory();
       btn.disabled = false;
       return;
@@ -349,7 +366,7 @@ function renderCaseDigest(data) {
   grid.appendChild(container);
 }
 
-function renderNewsDigest(items) {
+function renderNewsDigest(items, isCaseLaw) {
   _digestItems = items || [];
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
@@ -363,21 +380,30 @@ function renderNewsDigest(items) {
   container.style.cssText = 'grid-column:1/-1;display:flex;flex-direction:column;gap:12px;';
   items.forEach(function(item, idx) {
     const card = document.createElement('div');
+    const isCaseItem = isCaseLaw && item.sourceType === 'caselaw';
+    const isRegItem  = isCaseLaw && item.sourceType === 'regulation';
+    const borderColor = isCaseItem ? '#7c3aed' : isRegItem ? '#0891b2' : '#d1d5db';
     card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;';
     let dateLabel = '';
     if (item.published_date) {
       const raw = item.published_date.replace('Z','').replace('T',' ');
       dateLabel = raw.slice(0, 16) + (item.published_date.endsWith('Z') ? ' UTC' : '');
     }
+    const typeBadge = isCaseItem
+      ? '<span style="background:#ede9fe;color:#6d28d9;border-radius:4px;padding:1px 6px;font-weight:600;">⚖️ 判例</span>'
+      : isRegItem
+        ? '<span style="background:#e0f2fe;color:#0369a1;border-radius:4px;padding:1px 6px;font-weight:600;">📋 法规</span>'
+        : '';
     card.innerHTML = `
       <div style="flex:1;min-width:0;">
         <a href="${escHtml(item.url)}" target="_blank" rel="noopener"
            style="font-weight:600;color:#1a73e8;font-size:14px;text-decoration:none;display:block;margin-bottom:6px;">${escHtml(item.title)}</a>
         <div style="font-size:11px;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${typeBadge}
           <span style="background:#f3f4f6;border-radius:4px;padding:1px 6px;">${escHtml(item.source)}</span>
           ${dateLabel ? '<span style="color:#ef4444;font-weight:600;">🕐 ' + escHtml(dateLabel) + '</span>' : ''}
         </div>
-        <div style="font-size:12px;color:#374151;line-height:1.6;background:#f9fafb;border-left:3px solid #d1d5db;padding:8px 10px;border-radius:0 4px 4px 0;">${escHtml((item.snippet||'').slice(0,200) + ((item.snippet||'').length > 200 ? '…' : ''))}</div>
+        <div style="font-size:12px;color:#374151;line-height:1.6;background:#f9fafb;border-left:3px solid ${borderColor};padding:8px 10px;border-radius:0 4px 4px 0;">${escHtml((item.snippet||'').slice(0,200) + ((item.snippet||'').length > 200 ? '…' : ''))}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
         <button data-idx="${idx}" data-target="claude"
