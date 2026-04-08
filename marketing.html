@@ -35,6 +35,7 @@ input:focus,select:focus{border-color:var(--blue)}
 .status.info{background:#eff6ff;color:var(--blue);border:1px solid var(--blue-mid)}
 .status.success{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
 .status.error{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.status.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .platform-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .platform-header{padding:10px 14px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
@@ -501,12 +502,18 @@ function loadHistoryItem(i) {
   if (!entry || !entry.result) return;
   if ((entry.mode === 'news' || entry.mode === 'topic') && Array.isArray(entry.result)) {
     renderNewsDigest(entry.result);
+    setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
+  } else if ((entry.mode === 'news' || entry.mode === 'topic') && typeof entry.result === 'string') {
+    // Legacy format: titles saved as joined string, can't render as cards
+    setStatus('warn', '旧格式记录无法还原卡片，请重新搜索。（' + escHtml(entry.topic || '') + '）');
+    return;
   } else if (entry.mode === 'case' && typeof entry.result === 'string') {
     renderCaseDigest({ clientName: entry.topic.replace(' 成功案例', ''), rawText: entry.result });
+    setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
   } else {
     renderResults(entry.result);
+    setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
   }
-  setStatus('info', '已加载历史记录：' + escHtml(entry.topic || ''));
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
