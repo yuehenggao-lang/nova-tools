@@ -646,6 +646,8 @@ async function wsSearch() {
     const total = _wsCaseLawItems.length + _wsNewsItems.length;
     if (total === 0) { wsSetStatus('warn', '未找到相关素材，请调整角度描述后重试'); btn.disabled = false; return; }
 
+    console.log('[ws] caseLawItems:', JSON.stringify(_wsCaseLawItems.slice(0,2)));
+    console.log('[ws] newsItems:', JSON.stringify(_wsNewsItems.slice(0,2)));
     wsSetStatus('success', '✅ 找到 ' + _wsCaseLawItems.length + ' 条判例' + (_wsNewsItems.length ? '，' + _wsNewsItems.length + ' 条新闻' : '') + '，勾选要使用的素材');
     wsRenderItems();
     document.getElementById('ws-step2').style.display = '';
@@ -664,17 +666,17 @@ function wsRenderItems() {
     const badgeBg = type === 'caselaw' ? '#ede9fe' : '#e0f2fe';
     const badgeColor = type === 'caselaw' ? '#6d28d9' : '#0369a1';
     let html = '<div style="font-size:12px;font-weight:600;color:' + badgeColor + ';margin-bottom:8px;">' + label + '</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;width:100%;">';
+    html += '<div style="margin-bottom:16px;">';
     items.forEach(function(item, i) {
       const id = 'ws-' + type + '-' + i;
-      // Use div wrapper + hidden checkbox; <label> width can collapse in some browsers
-      html += '<div style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;background:#fff;border:1px solid var(--border);border-left:3px solid ' + borderColor + ';border-radius:6px;padding:10px 12px;width:100%;box-sizing:border-box;" onclick="document.getElementById(\'' + id + '\').click()">';
-      html += '<input type="checkbox" data-type="' + type + '" data-idx="' + i + '" id="' + id + '" style="margin-top:3px;accent-color:' + borderColor + ';flex-shrink:0;cursor:pointer;" onclick="event.stopPropagation()">';
-      html += '<div style="flex:1;min-width:0;overflow:hidden;">';
-      html += '<div style="font-size:13px;font-weight:600;color:#1a73e8;margin-bottom:3px;word-break:break-word;">' + escHtml(item.title) + '</div>';
-      html += '<div style="font-size:11px;color:#888;margin-bottom:4px;">' + escHtml(item.source) + '</div>';
-      html += '<div style="font-size:12px;color:#555;line-height:1.5;">' + escHtml((item.snippet || '').slice(0, 180)) + '</div>';
-      html += '</div></div>';
+      html += '<div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid ' + borderColor + ';border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;" onclick="var cb=document.getElementById(\'' + id + '\');cb.checked=!cb.checked;">';
+      html += '<div style="margin-bottom:8px;">';
+      html += '<input type="checkbox" data-type="' + type + '" data-idx="' + i + '" id="' + id + '" style="accent-color:' + borderColor + ';cursor:pointer;margin-right:8px;" onclick="event.stopPropagation()">';
+      html += '<strong style="font-size:13px;color:#1a73e8;">' + escHtml(item.title || '(no title)') + '</strong>';
+      html += '</div>';
+      html += '<div style="font-size:11px;color:#888;margin-bottom:4px;">' + escHtml(item.source || '') + '</div>';
+      html += '<div style="font-size:12px;color:#374151;line-height:1.6;">' + escHtml((item.snippet || '').slice(0, 180)) + '</div>';
+      html += '</div>';
     });
     html += '</div>';
     container.innerHTML = html;
