@@ -131,6 +131,14 @@ input:focus,select:focus{border-color:var(--blue)}
           style="width:100%;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;line-height:1.6;resize:vertical;outline:none;font-family:inherit;"
           onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></textarea>
       </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px;color:var(--gray);font-weight:500;display:block;margin-bottom:4px;">
+          判例关键词（英文，可选）
+          <span style="font-weight:400;color:#9ca3af;margin-left:4px;">留空则自动从角度中提取</span>
+        </label>
+        <input type="text" id="wsCaseLawKeywords" placeholder="例如：CEC FSW Express Entry judicial review reasonableness 2024 2025"
+          style="width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;">
+      </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer;">
           <input type="checkbox" id="wsAddNews" onchange="document.getElementById('wsNewsRow').style.display=this.checked?'flex':'none'"
@@ -633,7 +641,8 @@ async function wsSearch() {
     : '';
 
   try {
-    const payload = { mode: 'angle_search', angle, newsTopic };
+    const caseLawKeywords = document.getElementById('wsCaseLawKeywords').value.trim();
+    const payload = { mode: 'angle_search', angle, newsTopic, caseLawKeywords };
     const res = await fetch(GAS_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)));
     const data = await res.json();
 
@@ -672,7 +681,7 @@ function wsRenderItems() {
       html += '<div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid ' + borderColor + ';border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;" onclick="var cb=document.getElementById(\'' + id + '\');cb.checked=!cb.checked;">';
       html += '<div style="margin-bottom:8px;">';
       html += '<input type="checkbox" data-type="' + type + '" data-idx="' + i + '" id="' + id + '" style="accent-color:' + borderColor + ';cursor:pointer;margin-right:8px;" onclick="event.stopPropagation()">';
-      html += '<strong style="font-size:13px;color:#1a73e8;">' + escHtml(item.title || '(no title)') + '</strong>';
+      html += '<a href="' + escHtml(item.url) + '" target="_blank" rel="noopener" style="font-size:13px;color:#1a73e8;font-weight:600;text-decoration:none;" onclick="event.stopPropagation()">' + escHtml(item.title || '(no title)') + '</a>';
       html += '</div>';
       html += '<div style="font-size:11px;color:#888;margin-bottom:4px;">' + escHtml(item.source || '') + '</div>';
       html += '<div style="font-size:12px;color:#374151;line-height:1.6;">' + escHtml((item.snippet || '').slice(0, 180)) + '</div>';
