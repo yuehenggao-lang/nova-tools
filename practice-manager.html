@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Practice Manager — Nova Stage Immigration</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1d4ed8;--blue-light:#eff6ff;--blue-mid:#bfdbfe;--red:#dc2626;--green:#16a34a;--gray:#6b7280;--gray-light:#f9fafb;--border:#e5e7eb;--text:#111827;--radius:8px;--gold:#c8922a;--danger:#dc2626;--muted:#6b7280;--accent:#1d4ed8;--line:#e5e7eb}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f3f4f6;color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── Brand header ── */
+.brand{background:#fff;border-bottom:3px solid var(--gold);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.brand-name{font-size:16px;font-weight:700;color:var(--text)}
+.brand-sub{font-size:12px;color:var(--gray)}
+
+/* ── Main tabs ── */
+.main-tabs{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0}
+.main-tab{padding:13px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--gray);border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:inherit}
+.main-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.main-tab:hover:not(.active){color:var(--text);background:#f9fafb}
+
+/* ── Tab panels ── */
+.main-panel{display:none;padding:20px;max-width:1240px;margin:0 auto}
+.main-panel.active{display:block}
+
+/* ── Card ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-header{background:var(--blue-light);border-bottom:1px solid var(--blue-mid);padding:11px 18px;font-weight:700;font-size:14px;color:var(--blue);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-body{padding:18px}
+
+/* ── Forms ── */
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px}
+.fg label{font-size:13px;font-weight:600;color:#374151}
+.fg input,.fg select,.fg textarea{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text);width:100%;outline:none;transition:border .15s,box-shadow .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.08)}
+.fg textarea{resize:vertical;min-height:60px}
+.hint{font-size:11px;color:var(--gray);margin-top:3px}
+.fr{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-end}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1e40af}
+.btn-secondary{background:#fff;color:#374151;border:1px solid var(--border)}.btn-secondary:hover{background:#f3f4f6}
+.btn-danger{background:#fff;color:var(--red);border:1px solid #fecaca}.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── Tables ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f3f4f6;padding:8px 10px;text-align:left;font-weight:600;color:#374151;border-bottom:2px solid var(--border);white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tfoot td{background:#f9fafb;font-weight:600;border-top:2px solid var(--border);border-bottom:none}
+td.compact{max-width:180px;word-break:break-word}
+td.memo-cell{max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Metrics grid ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.metric{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+.metric-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.metric-value{font-size:14px;font-weight:700;color:var(--text)}
+
+/* ── Sub-tabs (Bookkeeping) ── */
+.sub-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.sub-tab{padding:6px 13px;border:1px solid var(--border);border-radius:20px;background:#fff;color:var(--gray);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.sub-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sub-tab:hover:not(.active){border-color:var(--blue);color:var(--blue)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Status / banners ── */
+.status{font-size:13px;padding:8px 12px;border-radius:6px;margin-top:8px;display:none}
+.status.show{display:block}
+.status.ok{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.status.error{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.result-link{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-top:8px;font-size:13px;word-break:break-all}
+.result-link a{color:#15803d;font-weight:600}
+
+/* ── Docket work items ── */
+.work-item{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;position:relative}
+.work-item-num{font-size:11px;color:var(--gray);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.btn-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--gray);font-size:16px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
+.btn-del:hover{color:var(--red);background:#fef2f2}
+.tag-billable{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:1px 7px;border-radius:10px;font-size:11px}
+.tag-compl{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;padding:1px 7px;border-radius:10px;font-size:11px}
+
+/* ── Billing sidebar ── */
+.billing-layout{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.sidebar{position:sticky;top:20px}
+.summary-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.sum-title{font-weight:700;font-size:13px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sum-line{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.sum-line.subtotal{border-top:1px solid var(--border);padding-top:7px;margin-top:3px}
+.sum-line.total{font-weight:700;font-size:15px;border-top:2px solid var(--border);padding-top:7px;margin-top:3px}
+.sum-line.gray{color:var(--gray);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:8px}
+.fee-row{display:grid;grid-template-columns:1fr 120px 32px;gap:8px;align-items:center;margin-bottom:8px}
+.fee-row select,.fee-row input{margin:0;border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;width:100%;outline:none}
+.fee-row select:focus,.fee-row input:focus{border-color:var(--blue)}
+.btn-generate{width:100%;padding:10px;font-size:14px;border-radius:6px;border:none;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all .15s}
+.btn-inv{background:var(--blue);color:#fff}.btn-inv:hover:not(:disabled){background:#1e40af}
+.btn-stmt{background:#fff;color:#374151;border:1px solid var(--border)}.btn-stmt:hover:not(:disabled){background:#f3f4f6}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── Bookkeeping entry form ── */
+.book-layout{display:grid;grid-template-columns:minmax(300px,400px) minmax(0,1fr);gap:16px}
+.book-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.book-form-grid .full{grid-column:1/-1}
+.entry-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px}
+.entry-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.entry-client{font-weight:700;font-size:14px}
+.entry-chip{display:inline-flex;padding:2px 8px;border-radius:10px;background:#f3f4f6;color:var(--gray);font-size:11px;margin-right:3px}
+.entry-amount{font-size:15px;font-weight:700;color:var(--blue);white-space:nowrap}
+.entry-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 10px}
+.entry-item-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.entry-item-value{font-size:13px;word-break:break-word}
+.entry-memo{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.entry-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+.edit-badge{display:inline-flex;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#92400e;font-size:11px;font-weight:700}
+.mode-note{background:#eff6ff;border:1px solid var(--blue-mid);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:12px}
+.mode-note strong{color:var(--text)}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-end}
+.entries-list{display:flex;flex-direction:column;gap:6px}
+
+/* ── Reports ── */
+.report-section{margin-bottom:20px}
+
+/* ── Dashboard metric cards ── */
+.dash-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.dash-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.dash-card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.dash-card-value{font-size:22px;font-weight:700;color:var(--blue)}
+.dash-actions{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+
+/* ── Journal sub-view tabs ── */
+.jnl-views{display:flex;gap:6px;margin-bottom:16px}
+.jnl-view-btn{padding:7px 16px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--gray);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.jnl-view-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── Journal template chips ── */
+.tpl-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tpl-chip{padding:4px 12px;border:1px solid var(--blue-mid);border-radius:16px;background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.tpl-chip:hover{background:var(--blue);color:#fff}
+
+/* ── Journal lines table ── */
+.jnl-lines-wrap{overflow-x:auto;margin-bottom:8px}
+.jnl-lines-table{width:100%;border-collapse:collapse;font-size:13px}
+.jnl-lines-table th{background:#f3f4f6;padding:7px 8px;text-align:left;font-weight:600;color:#374151;border-bottom:2px solid var(--border);white-space:nowrap}
+.jnl-lines-table td{padding:5px 6px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+.jnl-lines-table tfoot td{background:#f9fafb;font-weight:700;border-top:2px solid var(--border);font-size:12px}
+.jnl-lines-table input,.jnl-lines-table select{border:1px solid var(--border);border-radius:4px;padding:5px 7px;font-size:12px;font-family:inherit;background:#fff;width:100%;outline:none}
+.jnl-lines-table input:focus,.jnl-lines-table select:focus{border-color:var(--blue)}
+.jnl-lines-table .col-acct{min-width:170px}
+.jnl-lines-table .col-client{min-width:110px}
+.jnl-lines-table .col-num{width:90px}
+.jnl-lines-table .col-del{width:30px;text-align:center}
+
+/* ── Journal entry list ── */
+.jnl-entry-row{cursor:pointer}
+.jnl-entry-row:hover td{background:#f0f4ff}
+.jnl-detail-row{display:none}
+.jnl-detail-row.open{display:table-row}
+.badge-reversed{display:inline-block;padding:1px 7px;border-radius:10px;background:#fef2f2;color:var(--red);font-size:11px;font-weight:700;border:1px solid #fecaca}
+
+/* ── Balance hint ── */
+.bal-hint{font-size:12px;color:var(--red);margin-left:10px;display:none}
+.bal-hint.show{display:inline}
+
+@media(max-width:900px){.dash-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.dash-cards{grid-template-columns:1fr 1fr}}
+
+@media(max-width:900px){
+  .billing-layout,.book-layout{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .entry-card-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .main-tabs{padding:0 12px}
+  .main-panel{padding:12px}
+  .book-form-grid{grid-template-columns:1fr}
+  .entry-card-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="brand-name">Nova Stage Immigration — Practice Manager</div>
+  <div class="brand-sub">Yueheng Gao, RCIC #R534273</div>
+</div>
+
+<div class="main-tabs">
+  <button class="main-tab active" id="tab-docket" data-panel="docket">Docket</button>
+  <button class="main-tab" id="tab-dashboard" data-panel="dashboard">Dashboard</button>
+  <button class="main-tab" id="tab-journal" data-panel="journal">Journal</button>
+  <button class="main-tab" id="tab-accounts" data-panel="accounts">Accounts</button>
+  <button class="main-tab" id="tab-clients" data-panel="clients">Clients</button>
+  <button class="main-tab" id="tab-reports" data-panel="reports">Reports</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: DOCKET
+══════════════════════════════════════ -->
+<div class="main-panel active" id="panel-docket">
+
+  <div id="d-draftBanner" style="display:none;background:#fef9c3;border:1px solid #fde68a;border-radius:6px;padding:9px 14px;margin-bottom:12px;font-size:13px;color:#854d0e;align-items:center;justify-content:space-between">
+    <span>📝 检测到未提交的草稿 / Unsaved draft detected</span>
+    <button class="btn btn-secondary btn-sm" onclick="dClearDraft()">清除草稿</button>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">Client Information 客户信息</div>
+    <div class="card-body">
+      <div class="fr">
+        <div class="fg" style="flex:2">
+          <label>Client Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="d-clientName" list="d-clientList" autocomplete="off" placeholder="e.g. Ning Wang" oninput="dSaveDraft()" onchange="dLoadProfile(this.value.trim())">
+          <datalist id="d-clientList"></datalist>
+          <div class="hint">Must match Google Drive folder name exactly</div>
+        </div>
+        <div class="fg" style="flex:1.5">
+          <label>File No.</label>
+          <input type="text" id="d-fileNo" placeholder="NSI251202-01" oninput="dSaveDraft()">
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Rate ($/hr)</label>
+          <input type="number" id="d-billingRate" value="300" min="0" step="50" oninput="dSaveDraft()">
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Staff</label>
+          <input type="text" id="d-staffInitials" value="SG" maxlength="4" style="text-transform:uppercase" oninput="dSaveDraft()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      Work Items 工作记录
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="font-size:12px;color:var(--muted);font-weight:400">Default date:</label>
+        <input type="date" id="d-entryDate" style="border:1.5px solid var(--line);border-radius:7px;padding:5px 9px;font-size:13px;font-family:inherit">
+        <button class="btn btn-secondary btn-sm" onclick="dSetToday()">Today</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="d-workItems"></div>
+      <button class="btn btn-secondary" onclick="dAddWorkItem()" style="margin-top:6px">+ Add Work Item</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header" style="cursor:pointer" onclick="dToggleManage()">
+      Manage Existing Entries 管理已有记录
+      <span id="d-manageIcon" style="font-size:18px;color:var(--accent)">▸</span>
+    </div>
+    <div class="card-body" id="d-manageBody" style="display:none">
+      <div class="fr" style="align-items:center">
+        <span style="font-size:13px;color:var(--muted)">Client:</span>
+        <span id="d-manageClient" style="font-weight:700;color:var(--accent)">—</span>
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="dLoadManage()">Load Entries</button>
+      </div>
+      <div id="d-manageWrap" style="display:none">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Staff</th><th>Task / Detail</th><th>Hours</th><th>Type</th><th></th></tr></thead>
+            <tbody id="d-manageTbody"></tbody>
+          </table>
+        </div>
+        <div id="d-manageStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        <div id="d-billedSection" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:700;color:var(--muted)">Already Billed 已计费</span>
+            <span id="d-billedCount" style="font-size:11px;background:#fef3c7;color:#92400e;padding:1px 8px;border-radius:10px"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table><thead><tr><th>Date</th><th>Staff</th><th>Task</th><th>Hours</th><th>Invoice</th><th></th></tr></thead>
+            <tbody id="d-billedTbody"></tbody></table>
+          </div>
+        </div>
+        <button id="d-toggleBilledBtn" style="display:none;margin-top:10px" class="btn btn-secondary btn-sm" onclick="dToggleBilled()">▼ Show Billed Entries</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="d-errorBanner" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:12px 16px;margin-bottom:12px;color:var(--danger);font-size:13px"></div>
+  <div id="d-successBanner" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;padding:14px 16px;margin-bottom:12px">
+    <div style="font-weight:700;color:#15803d;margin-bottom:4px">✓ Docket saved successfully!</div>
+    <div id="d-successDetail" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+    <button class="btn btn-primary" id="d-submitBtn" onclick="dSubmit()">💾 Save to Drive</button>
+    <button class="btn btn-secondary" onclick="dClearAll()">Clear</button>
+  </div>
+
+  <!-- ── Invoice / Statement Generator ── -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">Invoice / Statement 开发票</div>
+    <div class="card-body">
+
+      <!-- Client lookup row -->
+      <div class="fr" style="align-items:flex-end;margin-bottom:12px">
+        <div class="fg" style="flex:2">
+          <label>Client Name</label>
+          <input type="text" id="ck-clientName" list="ck-clientList" autocomplete="off" placeholder="e.g. Ning Wang" oninput="ckOnClientInput()">
+          <datalist id="ck-clientList"></datalist>
+        </div>
+        <div class="fg" style="flex:1.2">
+          <label>Bill To (if different)</label>
+          <input type="text" id="ck-billTo" placeholder="same as client">
+        </div>
+        <div class="fg" style="flex:0 0 auto">
+          <label style="visibility:hidden">_</label>
+          <button class="btn btn-primary" onclick="ckLoadClient()">Load Docket</button>
+        </div>
+      </div>
+
+      <!-- Invoice details row -->
+      <div class="fr" style="align-items:flex-end;margin-bottom:12px">
+        <div class="fg" style="flex:1.5">
+          <label>File No.</label>
+          <input type="text" id="ck-fileNo" placeholder="NSI251202-01">
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Province</label>
+          <select id="ck-province" onchange="ckRecalc()">
+            <option value="">— No Tax —</option>
+            <option value="ON" selected>ON (HST 13%)</option>
+            <option value="BC">BC (GST 5%)</option>
+            <option value="AB">AB (GST 5%)</option>
+            <option value="NB">NB (HST 15%)</option>
+            <option value="NS">NS (HST 15%)</option>
+            <option value="MB">MB (GST 5%)</option>
+            <option value="SK">SK (GST 5%)</option>
+            <option value="QC">QC (GST 5%)</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:0 0 110px">
+          <label>Rate ($/hr)</label>
+          <input type="number" id="ck-billingRate" value="300" min="0" step="50" oninput="ckRecalc()">
+        </div>
+        <div class="fg" style="flex:1.5">
+          <label>Invoice No.</label>
+          <input type="text" id="ck-invoiceNo" placeholder="Auto-filled on Load">
+        </div>
+        <div class="fg" style="flex:0 0 140px">
+          <label>Invoice Date</label>
+          <input type="date" id="ck-invoiceDate" oninput="ckSyncDue()">
+        </div>
+        <div class="fg" style="flex:0 0 140px">
+          <label>Due Date
+            <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">
+              <a href="#" onclick="ckSetDue(14);return false">+14d</a> /
+              <a href="#" onclick="ckSetDue(30);return false">+30d</a>
+            </span>
+          </label>
+          <input type="date" id="ck-dueDate">
+        </div>
+      </div>
+
+      <!-- Trust info -->
+      <div id="ck-trustAvail" style="display:none;font-size:12px;color:var(--blue);background:#eff6ff;border-radius:6px;padding:6px 10px;margin-bottom:10px"></div>
+
+      <!-- Docket entries table -->
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">
+        Unbilled Docket Entries <span id="ck-entryCount" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px"></span>
+      </div>
+      <div id="ck-docketEmpty" style="display:none;font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+      <div id="ck-docketTableWrap" style="display:none;margin-bottom:10px">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Staff</th><th>Task / Detail</th><th style="text-align:right">Hours</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
+            <tbody id="ck-docketTbody"></tbody>
+            <tfoot><tr><td colspan="5" style="text-align:right;font-weight:700">Docket Subtotal</td><td style="text-align:right;font-weight:700" id="ck-docketSubtotal">$0.00</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Additional professional fees -->
+      <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Additional Professional Fees</div>
+          <div id="ck-proFeeRows"></div>
+          <button class="btn btn-secondary btn-sm" onclick="ckAddFee('pro')" style="margin-top:4px">+ Add Fee</button>
+        </div>
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Government Fees (disbursements)</div>
+          <div id="ck-govtFeeRows"></div>
+          <button class="btn btn-secondary btn-sm" onclick="ckAddFee('govt')" style="margin-top:4px">+ Add Gov Fee</button>
+        </div>
+      </div>
+
+      <!-- Deposits -->
+      <div class="fr" style="align-items:flex-end;margin-bottom:14px">
+        <div class="fg" style="flex:0 0 180px">
+          <label style="font-size:12px">Trust Applied (Professional)</label>
+          <input type="number" id="ck-depositPro" value="0" min="0" step="0.01" oninput="ckRecalc()">
+        </div>
+        <div class="fg" style="flex:0 0 180px">
+          <label style="font-size:12px">Trust Applied (Gov Fee)</label>
+          <input type="number" id="ck-depositGovt" value="0" min="0" step="0.01" oninput="ckRecalc()">
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <table style="width:260px;margin-left:auto;font-size:13px;border-collapse:collapse;margin-bottom:14px">
+        <tr><td style="color:var(--muted)">Docket Fees</td><td style="text-align:right" id="ck-sumDocket">$0.00</td></tr>
+        <tr><td style="color:var(--muted)">Add'l Pro Fees</td><td style="text-align:right" id="ck-sumProFees">$0.00</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="font-weight:700">Pro Subtotal</td><td style="text-align:right;font-weight:700" id="ck-sumSubtotal">$0.00</td></tr>
+        <tr id="ck-taxLine" style="display:none"><td id="ck-taxLabel" style="color:var(--muted)">Tax</td><td style="text-align:right" id="ck-sumTax">$0.00</td></tr>
+        <tr><td style="color:var(--muted)">Gov't Fees</td><td style="text-align:right" id="ck-sumGovt">$0.00</td></tr>
+        <tr style="border-top:2px solid var(--text)"><td style="font-weight:700;font-size:15px">Total</td><td style="text-align:right;font-weight:700;font-size:15px" id="ck-sumTotal">$0.00</td></tr>
+        <tr><td style="color:var(--muted)">Less: Trust Applied</td><td style="text-align:right" id="ck-sumDepositTotal">$0.00</td></tr>
+        <tr id="ck-balanceLine" style="display:none;border-top:1px solid var(--border)"><td style="font-weight:700">Balance Due</td><td style="text-align:right;font-weight:700;color:var(--blue)" id="ck-sumBalance">$0.00</td></tr>
+      </table>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-primary" id="ck-btnInvoice" disabled onclick="ckGenerate('invoice')">🧾 Generate Invoice</button>
+        <button class="btn btn-secondary" id="ck-btnStatement" disabled onclick="ckGenerate('statement')">📋 Generate Statement</button>
+        <button class="btn btn-secondary" id="ck-btnReset" disabled onclick="ckResetInvoice()" style="margin-left:auto">↩ Reset Invoice</button>
+      </div>
+      <div id="ck-resultArea" style="font-size:13px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: DASHBOARD
+══════════════════════════════════════ -->
+<div id="panel-dashboard" class="main-panel">
+
+  <!-- Metric Cards -->
+  <div class="dash-cards">
+    <div class="dash-card">
+      <div class="dash-card-label">Trust Balance (1100)</div>
+      <div class="dash-card-value" id="db-trust">—</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-label">Operating Balance (1200)</div>
+      <div class="dash-card-value" id="db-operating">—</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-label">AR Balance (1300)</div>
+      <div class="dash-card-value" id="db-ar">—</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-label">Revenue YTD</div>
+      <div class="dash-card-value" id="db-revenue">—</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="dash-actions">
+    <button class="btn btn-primary" onclick="dbQuickReceive()">+ Receive Money</button>
+    <button class="btn btn-secondary" onclick="dbQuickGovFee()">+ Pay Gov Fee</button>
+    <button class="btn btn-secondary" onclick="dbQuickNew()">+ New Entry</button>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="card">
+    <div class="card-header">Recent Transactions</div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Entry #</th>
+              <th>Memo</th>
+              <th>Source</th>
+              <th style="text-align:right">DR Total</th>
+              <th style="text-align:right">CR Total</th>
+            </tr>
+          </thead>
+          <tbody id="db-recentTbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3: JOURNAL
+══════════════════════════════════════ -->
+<div id="panel-journal" class="main-panel">
+
+  <!-- Sub-view switcher -->
+  <div class="jnl-views">
+    <button class="jnl-view-btn active" id="jnl-btn-form" onclick="jnlShowView('form')">New Entry</button>
+    <button class="jnl-view-btn" id="jnl-btn-list" onclick="jnlShowView('list')">Entry List</button>
+  </div>
+
+  <!-- ─── NEW ENTRY FORM ─── -->
+  <div id="jnl-view-form">
+
+    <!-- Template chips -->
+    <div class="tpl-chips">
+      <span style="font-size:12px;color:var(--muted);align-self:center;margin-right:4px">Templates:</span>
+      <button class="tpl-chip" onclick="jnlApplyTemplate('receive')">Receive Money</button>
+      <button class="tpl-chip" onclick="jnlApplyTemplate('govfee')">Pay Gov Fee</button>
+      <button class="tpl-chip" onclick="jnlApplyTemplate('transfer')">Transfer to Operating</button>
+      <button class="tpl-chip" onclick="jnlApplyTemplate('earnfee')">Earn Fee</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">New Journal Entry</div>
+      <div class="card-body">
+        <!-- Header fields -->
+        <div class="fr" style="margin-bottom:14px">
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date <span style="color:var(--danger)">*</span></label>
+            <input type="date" id="jnl-date">
+          </div>
+          <div class="fg" style="flex:2">
+            <label>Memo</label>
+            <input type="text" id="jnl-memo" placeholder="e.g. Trust receipt from Ning Wang">
+          </div>
+          <div class="fg" style="flex:0 0 140px">
+            <label>Source</label>
+            <select id="jnl-source">
+              <option value="manual">manual</option>
+              <option value="banking">banking</option>
+              <option value="invoice">invoice</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:0 0 80px">
+            <label>Created By</label>
+            <input type="text" id="jnl-createdBy" value="SG" maxlength="8">
+          </div>
+        </div>
+
+        <!-- Lines table -->
+        <div class="jnl-lines-wrap">
+          <table class="jnl-lines-table">
+            <thead>
+              <tr>
+                <th class="col-acct">Account</th>
+                <th class="col-client">Client</th>
+                <th class="col-num">DR CAD</th>
+                <th class="col-num">CR CAD</th>
+                <th class="col-num">DR RMB</th>
+                <th class="col-num">CR RMB</th>
+                <th class="col-del"></th>
+              </tr>
+            </thead>
+            <tbody id="jnl-linesTbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" style="text-align:right;padding-right:8px;font-size:12px">Totals:</td>
+                <td id="jnl-totDrCad">0.00</td>
+                <td id="jnl-totCrCad">0.00</td>
+                <td id="jnl-totDrRmb">0.00</td>
+                <td id="jnl-totCrRmb">0.00</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="jnlAddLine()">+ Add Line</button>
+          <button class="btn btn-primary" id="jnl-submitBtn" onclick="jnlSubmit()" disabled>Submit Entry</button>
+          <span class="bal-hint" id="jnl-balHint">DR must equal CR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ENTRY LIST ─── -->
+  <div id="jnl-view-list" style="display:none">
+
+    <!-- Filter bar -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:8px;align-items:flex-end">
+          <div class="fg" style="flex:0 0 auto">
+            <label>Fiscal Year</label>
+            <select id="jnl-fySelect" onchange="jnlApplyFY(this.value)" style="min-width:130px">
+              <option value="">Custom</option>
+              <option value="2025-06-01|2026-05-31" selected>FY 2025–26</option>
+              <option value="2026-06-01|2027-05-31">FY 2026–27</option>
+              <option value="2027-06-01|2028-05-31">FY 2027–28</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date From</label>
+            <input type="date" id="jnl-filterFrom" onchange="document.getElementById('jnl-fySelect').value=''">
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date To</label>
+            <input type="date" id="jnl-filterTo" onchange="document.getElementById('jnl-fySelect').value=''">
+          </div>
+          <div class="fg">
+            <label>Client</label>
+            <input type="text" id="jnl-filterClient" placeholder="optional">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="jnlLoadList()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Journal Entries</div>
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table id="jnl-listTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Entry #</th>
+                <th>Source</th>
+                <th>Memo</th>
+                <th style="text-align:center">Lines</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="jnl-listTbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Use the filter above to load entries.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ══════════════════════════════════════
+     TAB 4: ACCOUNTS
+══════════════════════════════════════ -->
+<div id="panel-accounts" class="main-panel">
+
+  <!-- CoA Table View -->
+  <div id="acct-view-coa">
+    <div class="card">
+      <div class="card-header">Chart of Accounts
+        <button class="btn btn-secondary btn-sm" onclick="acctLoad()">↻ Refresh</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th><th>Name</th><th>Type</th><th>Bal. Direction</th>
+                <th style="text-align:right">Balance</th><th style="text-align:center">Active</th>
+              </tr>
+            </thead>
+            <tbody id="acct-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Account form -->
+    <div class="card">
+      <div class="card-header">Add Account</div>
+      <div class="card-body">
+        <div class="fr" style="align-items:flex-end;margin-bottom:0">
+          <div class="fg" style="flex:0 0 100px">
+            <label>Code</label>
+            <input type="text" id="acct-newCode" placeholder="e.g. 6000">
+          </div>
+          <div class="fg" style="flex:2">
+            <label>Name</label>
+            <input type="text" id="acct-newName" placeholder="e.g. Office Supplies">
+          </div>
+          <div class="fg" style="flex:1">
+            <label>Type</label>
+            <select id="acct-newType">
+              <option value="asset">asset</option>
+              <option value="liability">liability</option>
+              <option value="equity">equity</option>
+              <option value="revenue">revenue</option>
+              <option value="expense">expense</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="acctAdd()">Add Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Set Opening Balance form -->
+    <div class="card">
+      <div class="card-header">Set Opening Balance
+        <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:8px">Posts a journal entry vs. Owner's Equity (3000)</span>
+      </div>
+      <div class="card-body">
+        <div class="fr" style="align-items:flex-end;margin-bottom:0">
+          <div class="fg" style="flex:0 0 180px">
+            <label>Account</label>
+            <select id="acct-obAccount" style="width:100%">
+              <option value="">— select —</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:0 0 140px">
+            <label>As-of Date</label>
+            <input type="date" id="acct-obDate">
+          </div>
+          <div class="fg" style="flex:0 0 130px">
+            <label>Balance CAD</label>
+            <input type="number" id="acct-obAmtCad" step="0.01" placeholder="0.00">
+          </div>
+          <div class="fg" style="flex:0 0 130px">
+            <label>Balance RMB</label>
+            <input type="number" id="acct-obAmtRmb" step="0.01" placeholder="0.00">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-warning" onclick="acctSetOpeningBalance()">Post Opening Balance</button>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+          Asset/Expense accounts: positive = debit balance. Liability/Equity/Revenue: positive = credit balance.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Ledger View -->
+  <div id="acct-view-ledger" style="display:none">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <button class="btn btn-secondary btn-sm" onclick="acctShowCoa()">← Back to Accounts</button>
+      <span style="font-weight:700;font-size:15px" id="acct-ledger-title">Account Ledger</span>
+    </div>
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date From</label>
+            <input type="date" id="acct-ledger-from">
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date To</label>
+            <input type="date" id="acct-ledger-to">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="acctLedgerLoad()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Entry #</th><th>Client</th><th>Memo</th>
+                <th style="text-align:right">DR CAD</th><th style="text-align:right">CR CAD</th>
+                <th style="text-align:right">Running Balance</th>
+              </tr>
+            </thead>
+            <tbody id="acct-ledger-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Select a date range and click Load.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 5: CLIENTS
+══════════════════════════════════════ -->
+<div id="panel-clients" class="main-panel">
+
+  <!-- Client List View -->
+  <div id="cli-view-list">
+    <div class="card">
+      <div class="card-header">Clients
+        <button class="btn btn-secondary btn-sm" onclick="cliLoad()">↻ Refresh</button>
+      </div>
+      <div class="card-body" style="padding:10px 14px 8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="cli-search" type="text" placeholder="搜索客户名…" oninput="cliFilterList()"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <button class="btn btn-primary btn-sm" onclick="cliShowAddForm()">+ Add Client</button>
+        </div>
+        <!-- Add Client inline form (hidden by default) -->
+        <div id="cli-add-form" style="display:none;margin-top:10px;display:none">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="cli-add-name" placeholder="Client name"
+              style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px"
+              onkeydown="if(event.key==='Enter')cliAddClient()">
+            <input type="date" id="cli-add-date"
+              style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+            <button class="btn btn-primary btn-sm" onclick="cliAddClient()">Save</button>
+            <button class="btn btn-secondary btn-sm" onclick="cliHideAddForm()">Cancel</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">没有记账记录的新客户，日期为签约日期</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>Client Name</th><th>首次入账</th><th></th></tr>
+            </thead>
+            <tbody id="cli-tbody">
+              <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Ledger View -->
+  <div id="cli-view-ledger" style="display:none">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <button class="btn btn-secondary btn-sm" onclick="cliShowList()">← Back to Clients</button>
+      <span style="font-weight:700;font-size:15px" id="cli-ledger-title">Client Ledger</span>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="metrics" id="cli-ledger-metrics" style="grid-template-columns:repeat(3,1fr)">
+      <div class="metric">
+        <div class="metric-label">Trust Balance</div>
+        <div class="metric-value" id="cli-met-trust">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">AR Balance</div>
+        <div class="metric-value" id="cli-met-ar">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Total Revenue</div>
+        <div class="metric-value" id="cli-met-revenue">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date From</label>
+            <input type="date" id="cli-ledger-from">
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date To</label>
+            <input type="date" id="cli-ledger-to">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="cliLedgerLoad()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Entry #</th><th>Account</th><th>Memo</th>
+                <th style="text-align:right">DR CAD</th><th style="text-align:right">CR CAD</th>
+              </tr>
+            </thead>
+            <tbody id="cli-ledger-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Click Load to view transactions.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 6: REPORTS
+══════════════════════════════════════ -->
+<div id="panel-reports" class="main-panel">
+
+  <!-- Report sub-tabs -->
+  <div class="sub-tabs" style="margin-bottom:16px">
+    <button class="sub-tab active" id="rpt-tab-tb"    onclick="rptShowTab('tb')">Trial Balance</button>
+    <button class="sub-tab"        id="rpt-tab-is"    onclick="rptShowTab('is')">Income Statement</button>
+    <button class="sub-tab"        id="rpt-tab-bs"    onclick="rptShowTab('bs')">Balance Sheet</button>
+    <button class="sub-tab"        id="rpt-tab-trust" onclick="rptShowTab('trust')">Trust Statement</button>
+  </div>
+
+  <!-- ── Trial Balance ── -->
+  <div id="rpt-view-tb">
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg" style="flex:0 0 180px">
+            <label>As of Date</label>
+            <input type="date" id="rpt-tb-date">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="rptLoadTb()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Trial Balance</div>
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th><th>Name</th><th>Type</th><th style="text-align:right">Net Balance</th>
+              </tr>
+            </thead>
+            <tbody id="rpt-tb-tbody">
+              <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Select a date and click Load.</td></tr>
+            </tbody>
+            <tfoot id="rpt-tb-tfoot" style="display:none">
+              <tr>
+                <td colspan="3" style="text-align:right;font-weight:700">Total Debits:</td>
+                <td style="text-align:right;font-weight:700" id="rpt-tb-tot-dr">0.00</td>
+              </tr>
+              <tr>
+                <td colspan="3" style="text-align:right;font-weight:700">Total Credits:</td>
+                <td style="text-align:right;font-weight:700" id="rpt-tb-tot-cr">0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Income Statement ── -->
+  <div id="rpt-view-is" style="display:none">
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date From</label>
+            <input type="date" id="rpt-is-from">
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date To</label>
+            <input type="date" id="rpt-is-to">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="rptLoadIs()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="rpt-is-card" style="display:none">
+      <div class="card-header" id="rpt-is-period">Income Statement</div>
+      <div class="card-body">
+        <div class="report-section">
+          <div style="font-weight:700;margin-bottom:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">Revenue</div>
+          <div class="tbl-wrap">
+            <table>
+              <tbody id="rpt-is-rev-tbody"></tbody>
+              <tfoot>
+                <tr><td style="font-weight:700">Total Revenue</td><td style="text-align:right;font-weight:700" id="rpt-is-tot-rev">—</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="report-section">
+          <div style="font-weight:700;margin-bottom:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">Expenses</div>
+          <div class="tbl-wrap">
+            <table>
+              <tbody id="rpt-is-exp-tbody"></tbody>
+              <tfoot>
+                <tr><td style="font-weight:700">Total Expenses</td><td style="text-align:right;font-weight:700" id="rpt-is-tot-exp">—</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <span style="font-weight:700;font-size:15px">Net Income</span>
+          <span style="font-weight:700;font-size:20px;color:var(--blue)" id="rpt-is-net">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Balance Sheet ── -->
+  <div id="rpt-view-bs" style="display:none">
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg" style="flex:0 0 180px">
+            <label>As of Date</label>
+            <input type="date" id="rpt-bs-date">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="rptLoadBs()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="rpt-bs-card" style="display:none">
+      <div class="card-header" id="rpt-bs-title">Balance Sheet</div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Assets -->
+          <div>
+            <div style="font-weight:700;margin-bottom:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">Assets</div>
+            <table style="width:100%">
+              <tbody id="rpt-bs-assets-tbody"></tbody>
+              <tfoot><tr><td style="font-weight:700;border-top:2px solid var(--border);padding-top:6px">Total Assets</td><td style="text-align:right;font-weight:700;border-top:2px solid var(--border);padding-top:6px" id="rpt-bs-tot-assets">—</td></tr></tfoot>
+            </table>
+          </div>
+          <!-- Liabilities + Equity -->
+          <div>
+            <div style="font-weight:700;margin-bottom:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">Liabilities</div>
+            <table style="width:100%">
+              <tbody id="rpt-bs-liab-tbody"></tbody>
+              <tfoot><tr><td style="font-weight:700;border-top:2px solid var(--border);padding-top:6px">Total Liabilities</td><td style="text-align:right;font-weight:700;border-top:2px solid var(--border);padding-top:6px" id="rpt-bs-tot-liab">—</td></tr></tfoot>
+            </table>
+            <div style="font-weight:700;margin:14px 0 6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em">Equity</div>
+            <table style="width:100%">
+              <tbody id="rpt-bs-eq-tbody"></tbody>
+              <tfoot>
+                <tr><td style="padding-top:4px">Retained Earnings</td><td style="text-align:right;padding-top:4px" id="rpt-bs-retained">—</td></tr>
+                <tr><td style="font-weight:700;border-top:2px solid var(--border);padding-top:6px">Total Equity</td><td style="text-align:right;font-weight:700;border-top:2px solid var(--border);padding-top:6px" id="rpt-bs-tot-eq">—</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:13px" id="rpt-bs-check"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Trust Statement ── -->
+  <div id="rpt-view-trust" style="display:none">
+    <div class="card">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg">
+            <label>Client</label>
+            <select id="rpt-trust-client">
+              <option value="">— Select client —</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date From</label>
+            <input type="date" id="rpt-trust-from">
+          </div>
+          <div class="fg" style="flex:0 0 150px">
+            <label>Date To</label>
+            <input type="date" id="rpt-trust-to">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label style="visibility:hidden">_</label>
+            <button class="btn btn-primary" onclick="rptLoadTrust()">Load</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="rpt-trust-card" style="display:none">
+      <div class="card-header" id="rpt-trust-title">Trust Statement</div>
+      <div class="card-body">
+        <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="metric"><div class="metric-label">Opening Balance</div><div class="metric-value" id="rpt-trust-open">—</div></div>
+          <div class="metric"><div class="metric-label">Total In</div><div class="metric-value" id="rpt-trust-in" style="color:var(--green)">—</div></div>
+          <div class="metric"><div class="metric-label">Total Out</div><div class="metric-value" id="rpt-trust-out" style="color:var(--red)">—</div></div>
+          <div class="metric"><div class="metric-label">Closing Balance</div><div class="metric-value" id="rpt-trust-close">—</div></div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Entry #</th><th>Description</th><th style="text-align:right">In (DR)</th><th style="text-align:right">Out (CR)</th></tr></thead>
+            <tbody id="rpt-trust-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const GAS_URL_DOCKET = 'https://script.google.com/macros/s/AKfycbyVF_SrXjB3oZLVWZbglX8qXWFZlznA8MzjY7-zVrtm5LbdONskxfhYA_PQPl_mcxue2g/exec';
+const GAS_URL_BOOK   = 'https://script.google.com/macros/s/AKfycbz-2jnLDgsN4eJp81uBD14EhxypvRUO3JWmg_Lx-r09cRnrjcyzzH2HiW8tj4M1HdlJ/exec';
+const GAS_URL_BOOK_V2 = 'https://script.google.com/macros/s/AKfycbz-2jnLDgsN4eJp81uBD14EhxypvRUO3JWmg_Lx-r09cRnrjcyzzH2HiW8tj4M1HdlJ/exec';
+
+// ═══════════════════════════════════════
+// SHARED UTILITIES
+// ═══════════════════════════════════════
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(n){ return Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function currency(v){ return '$'+fmt(v); }
+function truncate(s,n){ return s.length>n?s.slice(0,n-1)+'…':s; }
+function fmtDate(v){ return v?String(v).slice(0,10):''; }
+function fmtRecordedAt(v){ if(!v)return''; return String(v).replace('T',' ').replace('.000Z',' UTC').replace('Z',' UTC'); }
+function shortId(v){ if(!v)return''; const p=String(v).split('-'); return p.length>1?p[p.length-1]:v; }
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+const TAX_RATES={ON:{name:'HST',rate:.13},NB:{name:'HST',rate:.15},NS:{name:'HST',rate:.15},PE:{name:'HST',rate:.15},NL:{name:'HST',rate:.15},BC:{name:'GST',rate:.05},AB:{name:'GST',rate:.05},MB:{name:'GST',rate:.05},SK:{name:'GST',rate:.05},QC:{name:'GST',rate:.05},NT:{name:'GST',rate:.05},NU:{name:'GST',rate:.05},YT:{name:'GST',rate:.05}};
+const PRO_CATS=['Professional Fee','Translation Fee','Notarization Fee','Document Retrieval Fee'];
+const GOVT_CATS=['Government Fee','Biometrics Fee','Right of PR Fee (RPRF)','Police Certificate Fee','Medical Exam Fee','Courier Fee'];
+
+// Main tab switching
+function showTab(panelId){
+  const panelName = panelId.replace(/^panel-/,'');
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.main-panel').forEach(p=>p.classList.remove('active'));
+  const btn = document.getElementById('tab-'+panelName);
+  if(btn) btn.classList.add('active');
+  const panel = document.getElementById('panel-'+panelName);
+  if(panel) panel.classList.add('active');
+  if(panelName==='dashboard') dbLoad();
+  if(panelName==='journal') jnlOnTabOpen();
+  if(panelName==='accounts') acctOnTabOpen();
+  if(panelName==='clients') cliOnTabOpen();
+  if(panelName==='reports') rptOnTabOpen();
+}
+document.querySelectorAll('.main-tab').forEach(btn=>{
+  btn.addEventListener('click',()=> showTab(btn.dataset.panel));
+});
+
+// ═══════════════════════════════════════
+// DOCKET TAB
+// ═══════════════════════════════════════
+const D_DRAFT_KEY = 'nsi_pm_docket_draft';
+const D_HIST_KEY  = 'nsi_pm_docket_hist';
+const D_PROF_KEY  = 'nsi_pm_docket_prof';
+let dItemCount=0;
+let dManageEntries=[], dBilledEntries=[], dBilledVisible=false;
+
+const TASK_CATEGORIES=[
+  {group:'Communication 沟通',items:['WhatsApp communication','WhatsApp consultation','WhatsApp follow-up','Email — send','Email — reply','Email — review & reply','Phone call','Client follow-up','Video meeting']},
+  {group:'Document Review 文件审查',items:['Review client information form','Review documents','Review translation','Review job posting','File organization','Print documents','Organize application documents']},
+  {group:'Forms & Application 表格申请',items:['Form completion — IRCC','Form completion — ESDC','Form completion — PNP','Form modification','Application submission — Study Permit','Application submission — Work Permit','Application submission — PGWP','Application submission — LMIA','Application submission — Visitor Record','Application submission — PNP','Application submission — PR','Application submission — Other']},
+  {group:'Drafting 撰写',items:['Draft submission letter','Draft LMIA application','Draft work permit application','Draft study plan','Draft recruitment summary','Draft employer letter','Draft legal opinion']},
+  {group:'Legal Research 法律研究',items:['Legal research','Policy review','Case law research']},
+  {group:'Client Guidance 客户指导',items:['Guidance — document preparation','Guidance — requirements','Guidance — process','Provide document checklist','Collect client information']},
+  {group:'Administrative 行政',items:['Open file','Close file','Internal file review','Retainer / billing']},
+];
+
+function dBuildOptions(){
+  return TASK_CATEGORIES.map(c=>`<optgroup label="${c.group}">`+c.items.map(i=>`<option value="${i}">${i}</option>`).join('')+'</optgroup>').join('');
+}
+const TASK_OPTIONS_HTML=dBuildOptions();
+
+function dAddWorkItem(){
+  const idx=dItemCount++;
+  const div=document.createElement('div');
+  div.className='work-item'; div.id='d-item-'+idx;
+  div.innerHTML=`
+    <div class="work-item-num">Item ${idx+1}</div>
+    <button class="btn-del" onclick="dRemoveItem(${idx})">✕</button>
+    <div class="fr" style="margin-bottom:10px">
+      <div class="fg" style="flex:0 0 160px">
+        <label>Date</label>
+        <input type="date" class="d-date" value="${document.getElementById('d-entryDate').value||today()}" oninput="dSaveDraft()">
+      </div>
+      <div class="fg" style="flex:1">
+        <label>Task <span style="color:var(--danger)">*</span></label>
+        <select class="d-task" onchange="dSaveDraft()">${TASK_OPTIONS_HTML}</select>
+      </div>
+      <div class="fg" style="flex:0 0 90px">
+        <label>Hours</label>
+        <input type="number" class="d-hours" value="0.5" min="0.1" step="0.1" oninput="dSaveDraft()">
+      </div>
+    </div>
+    <div class="fr" style="margin-bottom:0">
+      <div class="fg">
+        <label>Detail / Note (optional)</label>
+        <input type="text" class="d-detail" placeholder="e.g. re: NOC code clarification" oninput="dSaveDraft()">
+      </div>
+      <div class="fg" style="flex:0 0 auto;justify-content:flex-end">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" class="d-compl" onchange="dToggleCompl(this);dSaveDraft()">
+          <span>Complimentary</span>
+        </label>
+      </div>
+    </div>
+  `;
+  document.getElementById('d-workItems').appendChild(div);
+}
+
+function dRemoveItem(idx){
+  const el=document.getElementById('d-item-'+idx);
+  if(el) el.remove();
+  dSaveDraft();
+}
+
+function dToggleCompl(cb){
+  const item=cb.closest('.work-item');
+  const hoursInput=item.querySelector('.d-hours');
+  hoursInput.disabled=cb.checked;
+  if(cb.checked) hoursInput.value='0';
+}
+
+function dSetToday(){
+  document.getElementById('d-entryDate').value=today();
+}
+
+function dGetItems(){
+  return Array.from(document.querySelectorAll('.work-item')).map(el=>({
+    date:       el.querySelector('.d-date').value || today(),
+    task:       el.querySelector('.d-task').value,
+    detail:     el.querySelector('.d-detail').value.trim(),
+    hours:      parseFloat(el.querySelector('.d-hours').value)||0,
+    complimentary: el.querySelector('.d-compl').checked,
+  })).filter(e=>e.task);
+}
+
+function dSaveDraft(){
+  const draft={
+    clientName:    document.getElementById('d-clientName').value,
+    fileNo:        document.getElementById('d-fileNo').value,
+    billingRate:   document.getElementById('d-billingRate').value,
+    staffInitials: document.getElementById('d-staffInitials').value,
+    entryDate:     document.getElementById('d-entryDate').value,
+    items: Array.from(document.querySelectorAll('.work-item')).map(el=>({
+      date:         el.querySelector('.d-date').value,
+      task:         el.querySelector('.d-task').value,
+      detail:       el.querySelector('.d-detail').value,
+      hours:        el.querySelector('.d-hours').value,
+      complimentary:el.querySelector('.d-compl').checked,
+    })),
+  };
+  localStorage.setItem(D_DRAFT_KEY,JSON.stringify(draft));
+}
+
+function dLoadProfile(name){
+  const profs=JSON.parse(localStorage.getItem(D_PROF_KEY)||'{}');
+  const p=profs[name.toLowerCase()];
+  if(!p)return;
+  if(p.fileNo)      document.getElementById('d-fileNo').value=p.fileNo;
+  if(p.billingRate) document.getElementById('d-billingRate').value=p.billingRate;
+  if(p.staffInitials) document.getElementById('d-staffInitials').value=p.staffInitials;
+}
+
+function dSaveProfile(){
+  const name=document.getElementById('d-clientName').value.trim();
+  if(!name)return;
+  const profs=JSON.parse(localStorage.getItem(D_PROF_KEY)||'{}');
+  profs[name.toLowerCase()]={
+    fileNo:        document.getElementById('d-fileNo').value.trim(),
+    billingRate:   document.getElementById('d-billingRate').value,
+    staffInitials: document.getElementById('d-staffInitials').value.trim().toUpperCase(),
+  };
+  localStorage.setItem(D_PROF_KEY,JSON.stringify(profs));
+  const hist=JSON.parse(localStorage.getItem(D_HIST_KEY)||'[]');
+  if(!hist.includes(name)) hist.unshift(name);
+  localStorage.setItem(D_HIST_KEY,JSON.stringify(hist.slice(0,50)));
+  dRefreshDatalist();
+}
+
+function dRefreshDatalist(){
+  const hist=JSON.parse(localStorage.getItem(D_HIST_KEY)||'[]');
+  const dl=document.getElementById('d-clientList');
+  dl.innerHTML=hist.map(n=>`<option value="${escHtml(n)}">`).join('');
+}
+
+function dLoadDraft(){
+  const raw=localStorage.getItem(D_DRAFT_KEY);
+  if(!raw) return;
+  try{
+    const draft=JSON.parse(raw);
+    if(draft.clientName) document.getElementById('d-clientName').value=draft.clientName;
+    if(draft.fileNo)     document.getElementById('d-fileNo').value=draft.fileNo;
+    if(draft.billingRate)document.getElementById('d-billingRate').value=draft.billingRate;
+    if(draft.staffInitials)document.getElementById('d-staffInitials').value=draft.staffInitials;
+    if(draft.entryDate)  document.getElementById('d-entryDate').value=draft.entryDate;
+    if(draft.items && draft.items.length){
+      document.getElementById('d-workItems').innerHTML='';
+      dItemCount=0;
+      draft.items.forEach(item=>{
+        dAddWorkItem();
+        const idx=dItemCount-1;
+        const el=document.getElementById('d-item-'+idx);
+        if(!el)return;
+        if(item.date)   el.querySelector('.d-date').value=item.date;
+        if(item.task)   el.querySelector('.d-task').value=item.task;
+        if(item.detail) el.querySelector('.d-detail').value=item.detail;
+        if(item.hours)  el.querySelector('.d-hours').value=item.hours;
+        if(item.complimentary){
+          const cb=el.querySelector('.d-compl');
+          cb.checked=true;
+          dToggleCompl(cb);
+        }
+      });
+      // Show draft banner
+      const banner=document.getElementById('d-draftBanner');
+      if(banner) banner.style.display='flex';
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+async function dSubmit(){
+  const errors=[];
+  const name=document.getElementById('d-clientName').value.trim();
+  if(!name) errors.push('Client name is required');
+  const items=dGetItems();
+  if(!items.length) errors.push('Add at least one work item');
+
+  const errEl=document.getElementById('d-errorBanner');
+  if(errors.length){
+    errEl.innerHTML='<strong>Please fix:</strong><ul>'+errors.map(e=>`<li>${e}</li>`).join('')+'</ul>';
+    errEl.style.display='';
+    return;
+  }
+  errEl.style.display='none';
+
+  const btn=document.getElementById('d-submitBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+
+  const payload={
+    clientName:    name,
+    fileNo:        document.getElementById('d-fileNo').value.trim(),
+    billingRate:   parseFloat(document.getElementById('d-billingRate').value)||300,
+    staffInitials: document.getElementById('d-staffInitials').value.trim().toUpperCase()||'SG',
+    entries:       items,
+  };
+
+  try{
+    await fetch(GAS_URL_DOCKET,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    dSaveProfile();
+    localStorage.removeItem(D_DRAFT_KEY);
+    const billable=items.filter(e=>!e.complimentary);
+    const hrs=billable.reduce((s,e)=>s+(e.hours||0),0);
+    document.getElementById('d-successDetail').textContent=
+      `${items.length} item(s) saved for ${name}. Billable: ${hrs.toFixed(1)} hrs`+
+      (items.filter(e=>e.complimentary).length?` + ${items.filter(e=>e.complimentary).length} complimentary`:'')+ '.';
+    document.getElementById('d-successBanner').style.display='';
+    document.getElementById('d-workItems').innerHTML='';
+    dItemCount=0;
+    showToast('Saved to Google Drive ✓');
+  }catch(err){
+    errEl.textContent='Error: '+err.message; errEl.style.display='';
+  }finally{
+    btn.disabled=false; btn.textContent='💾 Save to Drive';
+  }
+}
+
+function dClearAll(){
+  if(!confirm('Clear all entries?'))return;
+  document.getElementById('d-workItems').innerHTML=''; dItemCount=0;
+  document.getElementById('d-successBanner').style.display='none';
+  document.getElementById('d-errorBanner').style.display='none';
+  dClearDraft();
+}
+
+function dClearDraft(){
+  localStorage.removeItem(D_DRAFT_KEY);
+  const banner=document.getElementById('d-draftBanner');
+  if(banner) banner.style.display='none';
+}
+
+function dToggleManage(){
+  const body=document.getElementById('d-manageBody');
+  const icon=document.getElementById('d-manageIcon');
+  const open=body.style.display==='none';
+  body.style.display=open?'':'none';
+  icon.textContent=open?'▾':'▸';
+  if(open){
+    const name=document.getElementById('d-clientName').value.trim();
+    document.getElementById('d-manageClient').textContent=name||'(enter client name first)';
+  }
+}
+
+async function dLoadManage(){
+  const name=document.getElementById('d-clientName').value.trim();
+  if(!name){showToast('Enter client name first');return;}
+  document.getElementById('d-manageClient').textContent=name;
+  document.getElementById('d-manageStatus').textContent='Loading…';
+  document.getElementById('d-manageWrap').style.display='';
+  document.getElementById('d-manageTbody').innerHTML='';
+  try{
+    const res=await fetch(GAS_URL_DOCKET+'?action=getDocket&clientName='+encodeURIComponent(name));
+    const data=await res.json();
+    if(!data.success)throw new Error(data.error||'Failed');
+    dManageEntries=data.unbilledEntries||[];
+    dBilledEntries=data.billedEntries||[];
+    dRenderManage(name);
+    dRenderBilled(name);
+  }catch(err){
+    document.getElementById('d-manageStatus').textContent='Error: '+err.message;
+  }
+}
+
+function dRenderManage(clientName){
+  const tbody=document.getElementById('d-manageTbody');
+  if(!dManageEntries.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No unbilled entries</td></tr>';
+    document.getElementById('d-manageStatus').textContent='';
+    return;
+  }
+  tbody.innerHTML=dManageEntries.map((e,i)=>{
+    const tag=e.complimentary?'<span class="tag-compl">compl.</span>':'<span class="tag-billable">billable</span>';
+    const det=e.detail?`<div style="font-size:11px;color:var(--muted)">${escHtml(e.detail)}</div>`:'';
+    const cn=(clientName||'').replace(/'/g,"\\'");
+    return`<tr id="d-mrow-${i}"><td style="white-space:nowrap">${escHtml(e.date||'')}</td><td>${escHtml(e.staffInitials||'')}</td><td>${escHtml(e.task||'')}${det}</td><td>${e.complimentary?'—':(e.hours||'')}</td><td>${tag}</td><td><button class="btn btn-danger btn-sm" onclick="dDeleteEntry(${i},'${cn}')">Delete</button></td></tr>`;
+  }).join('');
+  document.getElementById('d-manageStatus').textContent=dManageEntries.length+' unbilled entries';
+}
+
+function dRenderBilled(clientName){
+  const btn=document.getElementById('d-toggleBilledBtn');
+  const sec=document.getElementById('d-billedSection');
+  if(!dBilledEntries.length){btn.style.display='none';sec.style.display='none';return;}
+  document.getElementById('d-billedCount').textContent=dBilledEntries.length+' entries';
+  document.getElementById('d-billedTbody').innerHTML=dBilledEntries.map((e,i)=>{
+    const det=e.detail?`<div style="font-size:11px;color:var(--muted)">${escHtml(e.detail)}</div>`:'';
+    const inv=e.invoiceNo?`<span style="font-size:11px;color:var(--muted)">${escHtml(e.invoiceNo)}</span>`:'—';
+    const cn=(clientName||'').replace(/'/g,"\\'");
+    return`<tr id="d-brow-${i}"><td style="white-space:nowrap">${escHtml(e.date||'')}</td><td>${escHtml(e.staffInitials||'')}</td><td>${escHtml(e.task||'')}${det}</td><td>${e.hours||''}</td><td>${inv}</td><td><button class="btn btn-secondary btn-sm" style="color:var(--green);border-color:var(--green)" onclick="dRestoreEntry(${i},'${cn}')">Restore</button></td></tr>`;
+  }).join('');
+  btn.style.display='';
+}
+
+function dToggleBilled(){
+  dBilledVisible=!dBilledVisible;
+  document.getElementById('d-billedSection').style.display=dBilledVisible?'':'none';
+  document.getElementById('d-toggleBilledBtn').textContent=dBilledVisible?'▲ Hide Billed':'▼ Show Billed Entries';
+}
+
+async function dRestoreEntry(idx,clientName){
+  const e=dBilledEntries[idx];
+  if(!e||!confirm(`Restore to unbilled?\n${e.date} — ${e.task} (${e.hours}h)`))return;
+  const btn=document.querySelector(`#d-brow-${idx} button`);
+  if(btn){btn.disabled=true;btn.textContent='…';}
+  try{
+    const url=GAS_URL_DOCKET+'?action=restoreBilledEntry&clientName='+encodeURIComponent(clientName)+'&date='+encodeURIComponent(e.date||'')+'&task='+encodeURIComponent(e.task||'')+'&hours='+encodeURIComponent(e.hours||'');
+    const data=await(await fetch(url)).json();
+    if(!data.success)throw new Error(data.error||'Failed');
+    dBilledEntries.splice(idx,1);
+    dManageEntries.push({...e,billed:false,invoiceNo:''});
+    dRenderManage(clientName);
+    dRenderBilled(clientName);
+    showToast('Entry restored ✓');
+  }catch(err){
+    showToast('Error: '+err.message);
+    if(btn){btn.disabled=false;btn.textContent='Restore';}
+  }
+}
+
+async function dDeleteEntry(idx,clientName){
+  const e=dManageEntries[idx];
+  if(!e||!confirm(`Delete entry?\n${e.date} — ${e.task}`))return;
+  const btn=document.querySelector(`#d-mrow-${idx} button`);
+  if(btn){btn.disabled=true;btn.textContent='…';}
+  try{
+    const url=GAS_URL_DOCKET+'?action=deleteEntry&clientName='+encodeURIComponent(clientName)+'&entryIdx='+idx;
+    const data=await(await fetch(url)).json();
+    if(!data.success)throw new Error(data.error||'Failed');
+    dManageEntries.splice(idx,1);
+    dRenderManage(clientName);
+    showToast('Deleted ✓');
+  }catch(err){
+    if(btn){btn.disabled=false;btn.textContent='Delete';}
+    showToast('Error: '+err.message);
+  }
+}
+
+// ═══════════════════════════════════════
+// DOCKET BILLING (invoice/statement helpers)
+// ═══════════════════════════════════════
+const CK_MEM_KEY='nsi_pm_ck_mem';
+let ckLoadedData=null;
+
+function ckSetDue(days){const base=document.getElementById('ck-invoiceDate').value||today();const d=new Date(base+'T12:00:00');d.setDate(d.getDate()+days);document.getElementById('ck-dueDate').value=d.toISOString().slice(0,10);}
+function ckSyncDue(){const inv=document.getElementById('ck-invoiceDate').value;const due=document.getElementById('ck-dueDate').value;if(!inv||!due)return;const diff=Math.round((new Date(due+'T12:00:00')-new Date(inv+'T12:00:00'))/86400000);ckSetDue(diff>=0?diff:30);}
+function ckSaveMem(name,fileNo,province,rate){const m=JSON.parse(localStorage.getItem(CK_MEM_KEY)||'{}');m[name.toLowerCase()]={name,fileNo,province,rate};localStorage.setItem(CK_MEM_KEY,JSON.stringify(m));document.getElementById('ck-clientList').innerHTML=Object.values(m).map(c=>`<option value="${escHtml(c.name)}">`).join('');}
+function ckOnClientInput(){const name=document.getElementById('ck-clientName').value.trim();const m=JSON.parse(localStorage.getItem(CK_MEM_KEY)||'{}');const s=m[name.toLowerCase()];if(!s)return;if(s.fileNo)document.getElementById('ck-fileNo').value=s.fileNo;if(s.province)document.getElementById('ck-province').value=s.province;if(s.rate)document.getElementById('ck-billingRate').value=s.rate;}
+function ckGoInvoice(name){document.getElementById('ck-clientName').value=name;ckLoadClient();}
+
+async function ckLoadClient(){
+  const name=document.getElementById('ck-clientName').value.trim();
+  if(!name){showToast('Enter client name');return;}
+  const tbody=document.getElementById('ck-docketTbody');
+  document.getElementById('ck-docketEmpty').style.display='none';
+  document.getElementById('ck-docketTableWrap').style.display='';
+  tbody.innerHTML='<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:16px">Loading…</td></tr>';
+  try{
+    const data=await(await fetch(GAS_URL_DOCKET+'?action=getDocket&clientName='+encodeURIComponent(name))).json();
+    if(!data.success)throw new Error(data.error||'Failed');
+    ckLoadedData=data;
+    if(data.fileNo)document.getElementById('ck-fileNo').value=data.fileNo;
+    if(data.billingRate)document.getElementById('ck-billingRate').value=data.billingRate;
+    const billToEl=document.getElementById('ck-billTo');
+    if(!billToEl.value.trim())billToEl.value=data.clientName||name;
+    const ymd=today().replace(/-/g,'');
+    const fn=document.getElementById('ck-fileNo').value.trim()||name.replace(/\s+/g,'-');
+    const base=fn+'-INV-'+ymd;
+    const used=new Set((data.billedEntries||[]).map(e=>e.invoiceNo||'').filter(Boolean));
+    let cand=base,seq=2;while(used.has(cand)){cand=base+'-'+seq++;}
+    document.getElementById('ck-invoiceNo').value=cand;
+    ckSaveMem(name,document.getElementById('ck-fileNo').value.trim(),document.getElementById('ck-province').value,document.getElementById('ck-billingRate').value);
+    ckRenderDocket(data.unbilledEntries||[]);
+    ['ck-btnInvoice','ck-btnStatement','ck-btnReset'].forEach(id=>document.getElementById(id).disabled=false);
+    showToast('Loaded — '+(data.unbilledEntries||[]).length+' unbilled entries');
+    ckFetchTrust(name);
+  }catch(err){tbody.innerHTML=`<tr><td colspan="6" style="color:var(--red);text-align:center;padding:16px">Error: ${escHtml(err.message)}</td></tr>`;showToast('Error: '+err.message);}
+}
+
+async function ckFetchTrust(clientName){
+  try{const data=await(await fetch(GAS_URL_BOOK+'?action=getClientTrustBalance&clientName='+encodeURIComponent(clientName))).json();if(!data.success)return;const total=(data.trustPrincipalCad||0)+(data.govFeeAdvanceHeldCad||0);const el=document.getElementById('ck-trustAvail');if(total>0){el.textContent=`Trust on account: ${currency(data.trustPrincipalCad)} principal + ${currency(data.govFeeAdvanceHeldCad)} gov fee advance`;el.style.display='';}else{el.style.display='none';}}catch(_){}
+}
+
+function ckRenderDocket(entries){
+  const tbody=document.getElementById('ck-docketTbody');tbody.innerHTML='';
+  if(!entries.length){document.getElementById('ck-docketEmpty').textContent='No unbilled docket entries.';document.getElementById('ck-docketEmpty').style.display='';document.getElementById('ck-docketTableWrap').style.display='none';document.getElementById('ck-entryCount').textContent='';ckRecalc();return;}
+  document.getElementById('ck-docketEmpty').style.display='none';document.getElementById('ck-docketTableWrap').style.display='';document.getElementById('ck-entryCount').textContent=entries.length+' entries';
+  const rate=parseFloat(document.getElementById('ck-billingRate').value)||300;let total=0;
+  entries.forEach(e=>{const er=e.rate||rate;const amt=e.complimentary?0:((e.hours||0)*er);total+=amt;const tr=document.createElement('tr');tr.innerHTML=`<td>${escHtml(e.date||'')}</td><td>${escHtml(e.staffInitials||'')}</td><td>${escHtml(e.task)}${e.detail?`<br><span style="font-size:11px;color:var(--gray)">${escHtml(e.detail)}</span>`:''}${e.complimentary?' <span class="tag-compl">compl.</span>':''}</td><td style="text-align:right">${(e.hours||0).toFixed(1)}</td><td style="text-align:right">$${er}/h</td><td style="text-align:right">${e.complimentary?'—':'$'+fmt(amt)}</td>`;tbody.appendChild(tr);});
+  document.getElementById('ck-docketSubtotal').textContent='$'+fmt(total);ckRecalc();
+}
+
+function ckAddFee(section,category,amount){const cats=section==='govt'?GOVT_CATS:PRO_CATS;const containerId=section==='govt'?'ck-govtFeeRows':'ck-proFeeRows';const div=document.createElement('div');div.className='fee-row';div.innerHTML=`<select class="fee-cat" onchange="ckRecalc()"><option value="">— Select —</option>${cats.map(c=>`<option${c===category?' selected':''}>${escHtml(c)}</option>`).join('')}</select><input type="number" class="fee-amt" placeholder="0.00" min="0" step="0.01"${amount?' value="'+amount+'"':''} oninput="ckRecalc()"><button class="btn btn-danger btn-sm" onclick="this.closest('.fee-row').remove();ckRecalc()">✕</button>`;document.getElementById(containerId).appendChild(div);ckRecalc();}
+function ckGetFees(containerId){return Array.from(document.querySelectorAll('#'+containerId+' .fee-row')).map(r=>({category:r.querySelector('.fee-cat').value,amount:parseFloat(r.querySelector('.fee-amt').value)||0})).filter(f=>f.category&&f.amount>0);}
+function ckRemoveFee(btn){btn.closest('.fee-row').remove();ckRecalc();}
+
+function ckRecalc(){
+  const rate=parseFloat(document.getElementById('ck-billingRate').value)||300;
+  let docketTotal=0;if(ckLoadedData&&ckLoadedData.unbilledEntries){ckLoadedData.unbilledEntries.forEach(e=>{if(!e.complimentary)docketTotal+=e.hours*(e.rate||rate);});}
+  const proFees=ckGetFees('ck-proFeeRows');const govtFees=ckGetFees('ck-govtFeeRows');const proFeeTotal=proFees.reduce((s,f)=>s+f.amount,0);const govtTotal=govtFees.reduce((s,f)=>s+f.amount,0);const proSubtotal=docketTotal+proFeeTotal;
+  const prov=document.getElementById('ck-province').value;const tax=prov&&TAX_RATES[prov]?TAX_RATES[prov]:null;const taxAmt=tax?Math.round(proSubtotal*tax.rate*100)/100:0;const total=proSubtotal+taxAmt+govtTotal;
+  const depPro=parseFloat(document.getElementById('ck-depositPro').value)||0;const depGovt=parseFloat(document.getElementById('ck-depositGovt').value)||0;const totalDep=depPro+depGovt;const balance=total-totalDep;
+  document.getElementById('ck-sumDocket').textContent='$'+fmt(docketTotal);document.getElementById('ck-sumProFees').textContent='$'+fmt(proFeeTotal);document.getElementById('ck-sumSubtotal').textContent='$'+fmt(proSubtotal);document.getElementById('ck-sumGovt').textContent='$'+fmt(govtTotal);document.getElementById('ck-sumTotal').textContent='$'+fmt(total);document.getElementById('ck-sumDepositTotal').textContent='$'+fmt(totalDep);
+  if(tax&&taxAmt>0){document.getElementById('ck-taxLine').style.display='';document.getElementById('ck-taxLabel').textContent=tax.name+' ('+(tax.rate*100).toFixed(0)+'%)';document.getElementById('ck-sumTax').textContent='$'+fmt(taxAmt);}else{document.getElementById('ck-taxLine').style.display='none';}
+  if(totalDep>0){document.getElementById('ck-balanceLine').style.display='';document.getElementById('ck-sumBalance').textContent=(balance<0?'-':'')+'$'+fmt(Math.abs(balance));}else{document.getElementById('ck-balanceLine').style.display='none';}
+}
+
+async function ckGenerate(type){
+  if(!ckLoadedData){showToast('Load a client first');return;}
+  const clientName=document.getElementById('ck-clientName').value.trim();const invoiceNo=document.getElementById('ck-invoiceNo').value.trim();
+  if(type==='invoice'&&!invoiceNo){showToast('Invoice No. required');return;}
+  const payload={action:type,clientName,billTo:document.getElementById('ck-billTo').value.trim()||clientName,fileNo:document.getElementById('ck-fileNo').value.trim(),invoiceNo,invoiceDate:document.getElementById('ck-invoiceDate').value,dueDate:document.getElementById('ck-dueDate').value,province:document.getElementById('ck-province').value,billingRate:parseFloat(document.getElementById('ck-billingRate').value)||300,depositPro:parseFloat(document.getElementById('ck-depositPro').value)||0,depositGovt:parseFloat(document.getElementById('ck-depositGovt').value)||0,deposit:(parseFloat(document.getElementById('ck-depositPro').value)||0)+(parseFloat(document.getElementById('ck-depositGovt').value)||0),professionalFees:ckGetFees('ck-proFeeRows'),govtFees:ckGetFees('ck-govtFeeRows'),fixedFees:[...ckGetFees('ck-proFeeRows'),...ckGetFees('ck-govtFeeRows')],unbilledEntries:ckLoadedData.unbilledEntries||[]};
+  const btnId=type==='invoice'?'ck-btnInvoice':'ck-btnStatement';const btn=document.getElementById(btnId);const orig=btn.textContent;btn.textContent='Generating…';btn.disabled=true;
+  try{const data=await(await fetch(GAS_URL_DOCKET,{method:'POST',body:JSON.stringify(payload)})).json();if(!data.success)throw new Error(data.error||'Failed');const label=type==='invoice'?'Invoice':'Statement';document.getElementById('ck-resultArea').innerHTML=`<div class="result-link">✅ ${label} created:<br><a href="${data.docUrl}" target="_blank">📄 Google Doc</a>${data.pdfUrl?`<br><a href="${data.pdfUrl}" target="_blank">📥 PDF</a>`:''}</div>`;showToast(label+' generated ✓');if(type==='invoice'){ckLoadedData.unbilledEntries=[];ckRenderDocket([]);}}
+  catch(err){showToast('Error: '+err.message);}finally{btn.textContent=orig;btn.disabled=false;}
+}
+
+async function ckResetInvoice(){
+  const clientName=document.getElementById('ck-clientName').value.trim();const invoiceNo=document.getElementById('ck-invoiceNo').value.trim();
+  if(!clientName||!invoiceNo){showToast('Load a client first');return;}
+  if(!confirm(`Reset invoice ${invoiceNo}?\n\nThis will mark all its entries as unbilled.`))return;
+  const btn=document.getElementById('ck-btnReset');btn.disabled=true;btn.textContent='Resetting…';
+  try{const url=GAS_URL_DOCKET+'?action=resetInvoice&clientName='+encodeURIComponent(clientName)+'&invoiceNo='+encodeURIComponent(invoiceNo);const data=await(await fetch(url)).json();if(!data.success)throw new Error(data.error||'Failed');showToast(`Reset ✓ — ${data.reset} entries unbilled`);await ckLoadClient();}
+  catch(err){showToast('Error: '+err.message);btn.disabled=false;btn.textContent='↩ Reset Invoice (unbill entries)';}
+}
+
+// ═══════════════════════════════════════
+// BOOKKEEPING V2 — SHARED HELPERS
+// ═══════════════════════════════════════
+async function bk2PostJson(payload) {
+  if (!GAS_URL_BOOK_V2) throw new Error('GAS_URL_BOOK_V2 not set');
+  // GAS POST redirect loses body (CORS issue) — send as GET with payload param instead
+  const qs = new URLSearchParams({ payload: JSON.stringify(payload) }).toString();
+  const res = await fetch(GAS_URL_BOOK_V2 + '?' + qs);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function bk2GetJson(params) {
+  if (!GAS_URL_BOOK_V2) throw new Error('GAS_URL_BOOK_V2 not set');
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(GAS_URL_BOOK_V2 + (qs ? '?' + qs : ''));
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+
+// ═══════════════════════════════════════
+// === DASHBOARD ===
+// ═══════════════════════════════════════
+let dbLoaded = false;
+
+async function dbLoad(){
+  if(!GAS_URL_BOOK_V2){ dbSetCards('—','—','—','—'); dbRecentEmpty('GAS_URL_BOOK_V2 not configured'); return; }
+  dbSetCards('…','…','…','…');
+  document.getElementById('db-recentTbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>';
+  try{
+    const r = await bk2GetJson({action:'getDashboard'});
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    dbSetCards(d.trust_cad, d.operating_cad, d.ar_cad, d.revenue_ytd);
+    dbRenderRecent(d.recent_entries||[]);
+    dbLoaded = true;
+  }catch(e){
+    dbSetCards('Err','Err','Err','Err');
+    dbRecentEmpty('Error: '+e.message);
+  }
+}
+
+function dbSetCards(trust, operating, ar, revenue){
+  const fv = v => (v===null||v===undefined||v==='…'||v==='—'||v==='Err') ? String(v) : '$'+fmt(v);
+  document.getElementById('db-trust').textContent     = fv(trust);
+  document.getElementById('db-operating').textContent = fv(operating);
+  document.getElementById('db-ar').textContent        = fv(ar);
+  document.getElementById('db-revenue').textContent   = fv(revenue);
+}
+
+function dbRenderRecent(entries){
+  const tb = document.getElementById('db-recentTbody');
+  if(!entries.length){ tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No recent entries</td></tr>'; return; }
+  tb.innerHTML = entries.slice(0,20).map(e=>`
+    <tr>
+      <td style="white-space:nowrap">${escHtml(fmtDate(e.entry_date))}</td>
+      <td>${escHtml(e.entry_id||'')}</td>
+      <td class="memo-cell">${escHtml(e.memo||'')}</td>
+      <td>${escHtml(e.source||'')}</td>
+      <td style="text-align:right">${e.total_dr_cad!=null?'$'+fmt(e.total_dr_cad):'—'}</td>
+      <td style="text-align:right">${e.total_cr_cad!=null?'$'+fmt(e.total_cr_cad):'—'}</td>
+    </tr>`).join('');
+}
+
+function dbRecentEmpty(msg){
+  document.getElementById('db-recentTbody').innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">${escHtml(msg)}</td></tr>`;
+}
+
+function dbQuickReceive(){ showTab('journal'); jnlShowView('form'); jnlApplyTemplate('receive'); }
+function dbQuickGovFee(){  showTab('journal'); jnlShowView('form'); jnlApplyTemplate('govfee'); }
+function dbQuickNew(){     showTab('journal'); jnlShowView('form'); }
+
+
+// ═══════════════════════════════════════
+// === JOURNAL ===
+// ═══════════════════════════════════════
+let jnlAccounts = [];   // cached from getAccounts
+let jnlListLoaded = false;
+
+// ── Tab open handler ──
+function jnlOnTabOpen(){
+  jnlEnsureAccounts();
+}
+
+async function jnlEnsureAccounts(){
+  if(jnlAccounts.length) return;
+  if(!GAS_URL_BOOK_V2) return;
+  try{
+    const r = await bk2GetJson({action:'getAccounts'});
+    if(r.success) jnlAccounts = (r.data||[]).filter(a=>a.is_active!==false);
+    else showToast('Failed to load accounts: '+(r.error||'unknown error'));
+    jnlRefreshAccountSelects();
+  }catch(e){ showToast('Failed to load accounts: '+e.message); }
+}
+
+function jnlAcctOptions(){
+  return '<option value="">— select —</option>' +
+    jnlAccounts.map(a=>`<option value="${escHtml(a.account_code)}">${escHtml(a.account_code)} — ${escHtml(a.account_name)}</option>`).join('');
+}
+
+function jnlRefreshAccountSelects(){
+  document.querySelectorAll('.jnl-acct-sel').forEach(sel=>{
+    const prev = sel.value;
+    sel.innerHTML = jnlAcctOptions();
+    if(prev) sel.value = prev;
+  });
+}
+
+// ── View toggling ──
+function jnlShowView(view){
+  document.getElementById('jnl-view-form').style.display = view==='form' ? '' : 'none';
+  document.getElementById('jnl-view-list').style.display = view==='list' ? '' : 'none';
+  document.getElementById('jnl-btn-form').classList.toggle('active', view==='form');
+  document.getElementById('jnl-btn-list').classList.toggle('active', view==='list');
+  if(view==='list' && !jnlListLoaded) jnlAutoLoadList();
+}
+
+// ── Lines management ──
+function jnlAddLine(acctCode, client, drCad, crCad, drRmb, crRmb){
+  const tbody = document.getElementById('jnl-linesTbody');
+  const tr = document.createElement('tr');
+  const rowId = 'jnl-lr-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  tr.id = rowId;
+  tr.innerHTML = `
+    <td class="col-acct"><select class="jnl-acct-sel" onchange="jnlUpdateTotals()">${jnlAcctOptions()}</select></td>
+    <td class="col-client"><input type="text" class="jnl-client" placeholder="optional" oninput="jnlUpdateTotals()"></td>
+    <td class="col-num"><input type="number" class="jnl-dr-cad" min="0" step="0.01" placeholder="0.00" oninput="jnlUpdateTotals()"></td>
+    <td class="col-num"><input type="number" class="jnl-cr-cad" min="0" step="0.01" placeholder="0.00" oninput="jnlUpdateTotals()"></td>
+    <td class="col-num"><input type="number" class="jnl-dr-rmb" min="0" step="0.01" placeholder="0.00" oninput="jnlUpdateTotals()"></td>
+    <td class="col-num"><input type="number" class="jnl-cr-rmb" min="0" step="0.01" placeholder="0.00" oninput="jnlUpdateTotals()"></td>
+    <td class="col-del"><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 5px" onclick="jnlRemoveLine('${rowId}')">✕</button></td>`;
+  tbody.appendChild(tr);
+  if(acctCode){ const sel=tr.querySelector('.jnl-acct-sel'); sel.value=acctCode; }
+  if(client)   tr.querySelector('.jnl-client').value = client;
+  if(drCad)    tr.querySelector('.jnl-dr-cad').value = drCad;
+  if(crCad)    tr.querySelector('.jnl-cr-cad').value = crCad;
+  if(drRmb)    tr.querySelector('.jnl-dr-rmb').value = drRmb;
+  if(crRmb)    tr.querySelector('.jnl-cr-rmb').value = crRmb;
+  jnlUpdateTotals();
+}
+
+function jnlRemoveLine(rowId){
+  const tr = document.getElementById(rowId);
+  if(tr) tr.remove();
+  jnlUpdateTotals();
+}
+
+function jnlUpdateTotals(){
+  let drCad=0, crCad=0, drRmb=0, crRmb=0;
+  document.querySelectorAll('#jnl-linesTbody tr').forEach(tr=>{
+    drCad += parseFloat(tr.querySelector('.jnl-dr-cad')?.value)||0;
+    crCad += parseFloat(tr.querySelector('.jnl-cr-cad')?.value)||0;
+    drRmb += parseFloat(tr.querySelector('.jnl-dr-rmb')?.value)||0;
+    crRmb += parseFloat(tr.querySelector('.jnl-cr-rmb')?.value)||0;
+  });
+  document.getElementById('jnl-totDrCad').textContent = drCad.toFixed(2);
+  document.getElementById('jnl-totCrCad').textContent = crCad.toFixed(2);
+  document.getElementById('jnl-totDrRmb').textContent = drRmb.toFixed(2);
+  document.getElementById('jnl-totCrRmb').textContent = crRmb.toFixed(2);
+  // Balance check (use integer cents to avoid float errors)
+  const cadOk = Math.round(drCad*100) === Math.round(crCad*100);
+  const rmbOk = Math.round(drRmb*100) === Math.round(crRmb*100);
+  const hasLines = document.querySelectorAll('#jnl-linesTbody tr').length > 0;
+  const balanced = cadOk && rmbOk && hasLines;
+  const submitBtn = document.getElementById('jnl-submitBtn');
+  const hint = document.getElementById('jnl-balHint');
+  submitBtn.disabled = !balanced;
+  hint.classList.toggle('show', !balanced);
+}
+
+function jnlGetLines(){
+  return Array.from(document.querySelectorAll('#jnl-linesTbody tr')).map(tr=>({
+    account_code: tr.querySelector('.jnl-acct-sel')?.value||'',
+    client_name:  tr.querySelector('.jnl-client')?.value.trim()||'',
+    dr_cad:       parseFloat(tr.querySelector('.jnl-dr-cad')?.value)||0,
+    cr_cad:       parseFloat(tr.querySelector('.jnl-cr-cad')?.value)||0,
+    dr_rmb:       parseFloat(tr.querySelector('.jnl-dr-rmb')?.value)||0,
+    cr_rmb:       parseFloat(tr.querySelector('.jnl-cr-rmb')?.value)||0,
+  })).filter(l=>l.account_code);
+}
+
+// ── Template chips ──
+function jnlApplyTemplate(tpl){
+  document.getElementById('jnl-linesTbody').innerHTML='';
+  const templates = {
+    receive:  [['1100','','','','',''],['2100','','','','','']],
+    govfee:   [['1400','','','','',''],['1100','','','','','']],
+    transfer: [['1200','','','','',''],['1100','','','','',''],['2100','','','','',''],['4000','','','','',''],['2200','','','','','']],
+    earnfee:  [['2100','','','','',''],['4000','','','','',''],['2200','','','','','']],
+  };
+  const lines = templates[tpl]||[];
+  lines.forEach(([acct])=>jnlAddLine(acct,'','','','',''));
+  jnlUpdateTotals();
+}
+
+// ── Submit ──
+async function jnlSubmit(){
+  const lines = jnlGetLines();
+  if(!lines.length){ showToast('Add at least one line'); return; }
+  const date  = document.getElementById('jnl-date').value;
+  const memo  = document.getElementById('jnl-memo').value.trim();
+  const source= document.getElementById('jnl-source').value;
+  const by    = document.getElementById('jnl-createdBy').value.trim()||'SG';
+  if(!date){ showToast('Date is required'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const btn = document.getElementById('jnl-submitBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const r = await bk2PostJson({action:'addEntry', entry_date:date, memo, source, created_by:by, lines});
+    if(!r.success) throw new Error(r.error||'Failed');
+    const entryId = r.data?.entry_id||'';
+    showToast('Entry saved: '+entryId);
+    // Reset form
+    document.getElementById('jnl-memo').value='';
+    document.getElementById('jnl-source').value='manual';
+    document.getElementById('jnl-linesTbody').innerHTML='';
+    document.getElementById('jnl-date').value=today();
+    jnlUpdateTotals();
+    // Reload list if it was already loaded
+    if(jnlListLoaded) jnlLoadList();
+  }catch(e){
+    showToast('Error: '+e.message);
+    btn.disabled=false;
+  }finally{
+    btn.textContent='Submit Entry';
+    jnlUpdateTotals(); // re-check balance to restore disabled state correctly
+  }
+}
+
+// ── Entry List ──
+function jnlApplyFY(val){
+  if(!val) return;
+  const [from, to] = val.split('|');
+  document.getElementById('jnl-filterFrom').value = from;
+  document.getElementById('jnl-filterTo').value   = to;
+}
+
+function jnlAutoLoadList(){
+  // Default: FY 2025-26 (Jun 1, 2025 – May 31, 2026)
+  const fyVal = '2025-06-01|2026-05-31';
+  jnlApplyFY(fyVal);
+  document.getElementById('jnl-fySelect').value = fyVal;
+  jnlLoadList();
+}
+
+async function jnlLoadList(){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const dateFrom    = document.getElementById('jnl-filterFrom').value;
+  const dateTo      = document.getElementById('jnl-filterTo').value;
+  const clientName  = document.getElementById('jnl-filterClient').value.trim();
+  const params = {action:'getEntries'};
+  if(dateFrom)   params.dateFrom   = dateFrom;
+  if(dateTo)     params.dateTo     = dateTo;
+  if(clientName) params.clientName = clientName;
+  const tbody = document.getElementById('jnl-listTbody');
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    jnlListLoaded = true;
+    jnlRenderList(r.data||[]);
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--red);padding:20px">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+function jnlRenderList(entries){
+  const tbody = document.getElementById('jnl-listTbody');
+  if(!entries.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No entries found</td></tr>';
+    return;
+  }
+  const rows = [];
+  entries.forEach((e, idx)=>{
+    const rev = e.is_reversed ? '<span class="badge-reversed">Reversed</span>' : '';
+    const detId = 'jnl-det-'+idx;
+    rows.push(`<tr class="jnl-entry-row" onclick="jnlToggleDetail(${idx})">
+      <td style="white-space:nowrap">${escHtml(fmtDate(e.entry_date))}</td>
+      <td>${escHtml(e.entry_id||'')}</td>
+      <td>${escHtml(e.source||'')}</td>
+      <td class="memo-cell">${escHtml(e.memo||'')}</td>
+      <td style="text-align:center">${(e.lines||[]).length}</td>
+      <td>${rev}</td>
+      <td style="font-size:11px;color:var(--muted)">▶</td>
+    </tr>`);
+    // Detail row (hidden)
+    const linesHtml = (e.lines||[]).map(l=>`<tr>
+      <td>${escHtml(l.account_code||'')} ${escHtml(l.account_name||'')}</td>
+      <td>${escHtml(l.client_name||'')}</td>
+      <td style="text-align:right">${l.dr_cad?'$'+fmt(l.dr_cad):''}</td>
+      <td style="text-align:right">${l.cr_cad?'$'+fmt(l.cr_cad):''}</td>
+      <td style="text-align:right">${l.dr_rmb?'¥'+fmt(l.dr_rmb):''}</td>
+      <td style="text-align:right">${l.cr_rmb?'¥'+fmt(l.cr_rmb):''}</td>
+    </tr>`).join('');
+    const revBtn = !e.is_reversed
+      ? `<button class="btn btn-danger btn-sm" onclick="jnlReverseEntry(event,'${escHtml(e.entry_id||'')}')">Reverse</button>`
+      : '';
+    rows.push(`<tr id="${detId}" style="display:none"><td colspan="7" style="padding:0">
+      <div style="background:#f9fafb;border-top:1px solid var(--border);padding:10px 16px">
+        <div class="tbl-wrap"><table style="font-size:12px">
+          <thead><tr><th>Account</th><th>Client</th><th>DR CAD</th><th>CR CAD</th><th>DR RMB</th><th>CR RMB</th></tr></thead>
+          <tbody>${linesHtml}</tbody>
+        </table></div>
+        <div style="margin-top:8px">${revBtn}</div>
+      </div>
+    </td></tr>`);
+  });
+  tbody.innerHTML = rows.join('');
+  // store entries for toggle
+  tbody._entries = entries;
+}
+
+function jnlToggleDetail(idx){
+  const detId = 'jnl-det-'+idx;
+  const det = document.getElementById(detId);
+  if(!det) return;
+  const open = det.style.display === '';
+  det.style.display = open ? 'none' : '';
+}
+
+async function jnlReverseEntry(evt, entryId){
+  evt.stopPropagation();
+  if(!confirm('Reverse entry '+entryId+'?')) return;
+  const btn = evt.target;
+  btn.disabled=true; btn.textContent='Reversing…';
+  try{
+    const createdBy = (document.getElementById('jnl-createdBy')?.value.trim())||'SG';
+    const r = await bk2PostJson({action:'reverseEntry', entry_id:entryId, memo:'Reversal of '+entryId, created_by:createdBy});
+    if(!r.success) throw new Error(r.error||'Failed');
+    showToast('Reversed: '+entryId);
+    jnlLoadList();
+  }catch(e){
+    showToast('Error: '+e.message);
+    btn.disabled=false; btn.textContent='Reverse';
+  }
+}
+
+
+// ═══════════════════════════════════════
+// === ACCOUNTS ===
+// ═══════════════════════════════════════
+let acctData = [];          // all accounts from CoA
+let acctBalances = {};      // account_code → net_balance
+let acctCurrentCode = null; // account being viewed in ledger
+let acctLoaded = false;
+
+function acctOnTabOpen(){
+  if(!acctLoaded) acctLoad();
+}
+
+async function acctLoad(){
+  if(!GAS_URL_BOOK_V2){ acctSetBodyMsg('GAS_URL_BOOK_V2 not configured', 6); return; }
+  acctSetBodyMsg('Loading…', 6);
+  try{
+    // Load CoA and trial balance in parallel
+    const [coaR, tbR] = await Promise.all([
+      bk2GetJson({action:'getAccounts'}),
+      bk2GetJson({action:'getTrialBalance'}),
+    ]);
+    if(!coaR.success) throw new Error(coaR.error||'getAccounts failed');
+    if(!tbR.success)  throw new Error(tbR.error||'getTrialBalance failed');
+    acctData = coaR.data||[];
+    acctBalances = {};
+    (tbR.data?.rows||[]).forEach(r=>{ acctBalances[r.account_code] = r.net_balance; });
+    acctLoaded = true;
+    acctRenderCoa();
+    acctPopulateObSelect();
+  }catch(e){
+    acctSetBodyMsg('Error: '+e.message, 6);
+  }
+}
+
+function acctSetBodyMsg(msg, cols){
+  document.getElementById('acct-tbody').innerHTML =
+    `<tr><td colspan="${cols}" style="text-align:center;color:var(--muted);padding:20px">${escHtml(msg)}</td></tr>`;
+}
+
+function acctRenderCoa(){
+  const tbody = document.getElementById('acct-tbody');
+  if(!acctData.length){ acctSetBodyMsg('No accounts found', 6); return; }
+  tbody.innerHTML = acctData.map(a => acctRowHtml(a)).join('');
+}
+
+function acctRowHtml(a){
+  const code = escHtml(a.account_code);
+  const bal  = acctBalances[a.account_code];
+  const balStr = bal!=null ? '$'+fmt(bal) : '—';
+  const activeCheck = a.is_active!==false
+    ? '<span style="color:var(--green);font-size:15px">✓</span>'
+    : '<span style="color:var(--muted);font-size:15px">—</span>';
+  const toggleBtn = `<button class="btn btn-secondary btn-sm" onclick="acctToggleActive('${code}',${a.is_active!==false})">${a.is_active!==false?'Deactivate':'Activate'}</button>`;
+  const editBtn   = `<button class="btn btn-secondary btn-sm" onclick="acctStartEdit('${code}')">Edit</button>`;
+  return `<tr id="acct-row-${code}" class="jnl-entry-row" onclick="acctOpenLedger('${code}','${escHtml(a.account_name)}')">
+    <td style="font-family:monospace">${code}</td>
+    <td>${escHtml(a.account_name)}</td>
+    <td>${escHtml(a.account_type||'')}</td>
+    <td>${escHtml(a.normal_balance||'')}</td>
+    <td style="text-align:right;font-weight:600">${balStr}</td>
+    <td style="text-align:center;white-space:nowrap" onclick="event.stopPropagation()">
+      ${activeCheck}&nbsp;${editBtn}&nbsp;${toggleBtn}
+    </td>
+  </tr>`;
+}
+
+function acctStartEdit(code){
+  event.stopPropagation();
+  const a = acctData.find(x=>x.account_code===code);
+  if(!a) return;
+  const row = document.getElementById('acct-row-'+code);
+  if(!row) return;
+  const typeOpts = ['asset','liability','equity','revenue','expense']
+    .map(t=>`<option value="${t}"${a.account_type===t?' selected':''}>${t}</option>`).join('');
+  row.innerHTML = `
+    <td style="font-family:monospace">${escHtml(code)}</td>
+    <td><input id="acct-edit-name-${escHtml(code)}" value="${escHtml(a.account_name)}" style="width:100%;box-sizing:border-box" onclick="event.stopPropagation()"></td>
+    <td><select id="acct-edit-type-${escHtml(code)}" onclick="event.stopPropagation()">${typeOpts}</select></td>
+    <td style="color:var(--muted);font-size:12px">auto</td>
+    <td style="text-align:right;font-weight:600">${acctBalances[code]!=null?'$'+fmt(acctBalances[code]):'—'}</td>
+    <td style="text-align:center;white-space:nowrap" onclick="event.stopPropagation()">
+      <button class="btn btn-primary btn-sm" onclick="acctSaveEdit('${escHtml(code)}')">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="acctCancelEdit('${escHtml(code)}')">Cancel</button>
+    </td>`;
+  row.onclick = null;
+}
+
+function acctCancelEdit(code){
+  const a = acctData.find(x=>x.account_code===code);
+  if(!a) return;
+  const row = document.getElementById('acct-row-'+code);
+  if(!row) return;
+  row.outerHTML = acctRowHtml(a);
+}
+
+async function acctSaveEdit(code){
+  const nameEl = document.getElementById('acct-edit-name-'+code);
+  const typeEl = document.getElementById('acct-edit-type-'+code);
+  if(!nameEl||!typeEl){ showToast('Edit fields not found'); return; }
+  const newName = nameEl.value.trim();
+  const newType = typeEl.value;
+  if(!newName){ showToast('Name cannot be empty'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  try{
+    const r = await bk2PostJson({action:'updateAccount', account_code:code, account_name:newName, account_type:newType});
+    if(!r.success) throw new Error(r.error||'Failed');
+    // Update local data
+    const a = acctData.find(x=>x.account_code===code);
+    if(a){
+      a.account_name = newName;
+      a.account_type = newType;
+      a.normal_balance = (newType==='asset'||newType==='expense') ? 'DR' : 'CR';
+    }
+    showToast('Updated: '+code);
+    acctCancelEdit(code);
+    acctPopulateObSelect();
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+function acctPopulateObSelect(){
+  const sel = document.getElementById('acct-obAccount');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">— select —</option>' +
+    acctData.filter(a => a.is_active !== false).map(a =>
+      `<option value="${escHtml(a.account_code)}" data-type="${escHtml(a.account_type||'')}">${escHtml(a.account_code)} – ${escHtml(a.account_name)}</option>`
+    ).join('');
+  // default date to fiscal year start
+  const obDate = document.getElementById('acct-obDate');
+  if(obDate && !obDate.value) obDate.value = '2025-06-01';
+}
+
+async function acctSetOpeningBalance(){
+  const sel    = document.getElementById('acct-obAccount');
+  const code   = sel.value;
+  const type   = sel.selectedOptions[0]?.dataset?.type || 'asset';
+  const date   = document.getElementById('acct-obDate').value;
+  const amtCad = parseFloat(document.getElementById('acct-obAmtCad').value) || 0;
+  const amtRmb = parseFloat(document.getElementById('acct-obAmtRmb').value) || 0;
+  if(!code){ showToast('Select an account'); return; }
+  if(!date){ showToast('Date is required'); return; }
+  if(amtCad === 0 && amtRmb === 0){ showToast('Enter a non-zero balance'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+
+  // Normal balance: asset/expense → DR; liability/equity/revenue → CR
+  const isDrNormal = (type === 'asset' || type === 'expense');
+
+  // Build journal lines: account DR/CR vs 3000 Owner's Equity
+  const lines = [];
+  if(amtCad !== 0){
+    lines.push(isDrNormal
+      ? {account_code:code,    client_name:'',dr_cad:amtCad,cr_cad:0,dr_rmb:0,cr_rmb:0}
+      : {account_code:code,    client_name:'',dr_cad:0,cr_cad:amtCad,dr_rmb:0,cr_rmb:0});
+    lines.push(isDrNormal
+      ? {account_code:'3000',  client_name:'',dr_cad:0,cr_cad:amtCad,dr_rmb:0,cr_rmb:0}
+      : {account_code:'3000',  client_name:'',dr_cad:amtCad,cr_cad:0,dr_rmb:0,cr_rmb:0});
+  }
+  if(amtRmb !== 0){
+    lines.push(isDrNormal
+      ? {account_code:code,    client_name:'',dr_cad:0,cr_cad:0,dr_rmb:amtRmb,cr_rmb:0}
+      : {account_code:code,    client_name:'',dr_cad:0,cr_cad:0,dr_rmb:0,cr_rmb:amtRmb});
+    lines.push(isDrNormal
+      ? {account_code:'3000',  client_name:'',dr_cad:0,cr_cad:0,dr_rmb:0,cr_rmb:amtRmb}
+      : {account_code:'3000',  client_name:'',dr_cad:0,cr_cad:0,dr_rmb:amtRmb,cr_rmb:0});
+  }
+
+  const acctName = sel.selectedOptions[0]?.text || code;
+  const payload = {
+    action:'addEntry',
+    entry_date: date,
+    memo: `Opening Balance – ${acctName}`,
+    source: 'opening-balance',
+    created_by: 'SG',
+    lines,
+  };
+
+  const btn = document.querySelector('[onclick="acctSetOpeningBalance()"]');
+  btn.disabled=true; btn.textContent='Posting…';
+  try{
+    const r = await bk2PostJson(payload);
+    if(!r.success) throw new Error(r.error||'Failed');
+    showToast('Opening balance posted: '+r.data?.entry_id);
+    document.getElementById('acct-obAmtCad').value='';
+    document.getElementById('acct-obAmtRmb').value='';
+    acctLoaded = false;
+    acctLoad();
+  }catch(e){
+    showToast('Error: '+e.message);
+  }finally{
+    btn.disabled=false; btn.textContent='Post Opening Balance';
+  }
+}
+
+async function acctToggleActive(code, currentlyActive){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  try{
+    const r = await bk2PostJson({action:'updateAccount', account_code:code, is_active:!currentlyActive});
+    if(!r.success) throw new Error(r.error||'Failed');
+    showToast((currentlyActive?'Deactivated':'Activated')+': '+code);
+    acctLoaded = false;
+    acctLoad();
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+async function acctAdd(){
+  const code = document.getElementById('acct-newCode').value.trim();
+  const name = document.getElementById('acct-newName').value.trim();
+  const type = document.getElementById('acct-newType').value;
+  if(!code||!name){ showToast('Code and Name are required'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  try{
+    const r = await bk2PostJson({action:'addAccount', account_code:code, account_name:name, account_type:type});
+    if(!r.success) throw new Error(r.error||'Failed');
+    showToast('Account added: '+code);
+    document.getElementById('acct-newCode').value='';
+    document.getElementById('acct-newName').value='';
+    acctLoaded = false;
+    acctLoad();
+    // Also refresh account selects in Journal
+    jnlAccounts = [];
+    jnlEnsureAccounts();
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+function acctOpenLedger(code, name){
+  acctCurrentCode = code;
+  document.getElementById('acct-ledger-title').textContent = name + ' (' + code + ')';
+  // Default last 90 days
+  const to = today();
+  const fr = new Date(); fr.setDate(fr.getDate()-90);
+  document.getElementById('acct-ledger-from').value = fr.toISOString().slice(0,10);
+  document.getElementById('acct-ledger-to').value   = to;
+  document.getElementById('acct-view-coa').style.display    = 'none';
+  document.getElementById('acct-view-ledger').style.display = '';
+  acctLedgerLoad();
+}
+
+function acctShowCoa(){
+  document.getElementById('acct-view-coa').style.display    = '';
+  document.getElementById('acct-view-ledger').style.display = 'none';
+  acctCurrentCode = null;
+}
+
+async function acctLedgerLoad(){
+  if(!acctCurrentCode){ showToast('No account selected'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const dateFrom = document.getElementById('acct-ledger-from').value;
+  const dateTo   = document.getElementById('acct-ledger-to').value;
+  const params   = {action:'getAccountLedger', accountCode:acctCurrentCode};
+  if(dateFrom) params.dateFrom = dateFrom;
+  if(dateTo)   params.dateTo   = dateTo;
+  const tbody = document.getElementById('acct-ledger-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    const rows = d.rows||[];
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No transactions in this period.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(row=>{
+      const bal = Number(row.running_balance||0);
+      const balColor = bal > 0 ? 'color:var(--green)' : (bal < 0 ? 'color:var(--red)' : '');
+      return `<tr>
+        <td style="white-space:nowrap">${escHtml(fmtDate(row.entry_date))}</td>
+        <td>${escHtml(row.entry_id||'')}</td>
+        <td>${escHtml(row.client_name||'')}</td>
+        <td class="memo-cell">${escHtml(row.memo||'')}</td>
+        <td style="text-align:right">${row.dr_cad?'$'+fmt(row.dr_cad):''}</td>
+        <td style="text-align:right">${row.cr_cad?'$'+fmt(row.cr_cad):''}</td>
+        <td style="text-align:right;font-weight:600;${balColor}">$${fmt(bal)}</td>
+      </tr>`;
+    }).join('');
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--red);padding:20px">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+
+// ═══════════════════════════════════════
+// === CLIENTS ===
+// ═══════════════════════════════════════
+const CLI_MANUAL_KEY = 'nsi_pm_manual_clients';  // localStorage key
+let cliClientNames = [];   // [{name, firstDate, manual?}]
+let cliLoaded = false;
+let cliCurrentClient = null;
+
+function cliGetManual(){
+  try{ return JSON.parse(localStorage.getItem(CLI_MANUAL_KEY)||'[]'); }
+  catch(_){ return []; }
+}
+function cliSaveManual(list){
+  localStorage.setItem(CLI_MANUAL_KEY, JSON.stringify(list));
+}
+
+function cliShowAddForm(){
+  const f = document.getElementById('cli-add-form');
+  f.style.display = '';
+  document.getElementById('cli-add-date').value = today();
+  document.getElementById('cli-add-name').focus();
+}
+function cliHideAddForm(){
+  document.getElementById('cli-add-form').style.display = 'none';
+  document.getElementById('cli-add-name').value = '';
+}
+function cliAddClient(){
+  const name = document.getElementById('cli-add-name').value.trim();
+  const date = document.getElementById('cli-add-date').value || today();
+  if(!name){ showToast('请输入客户名'); return; }
+  const manual = cliGetManual();
+  if(manual.find(c=>c.name===name) || cliClientNames.find(c=>c.name===name)){
+    showToast('客户已存在: '+name); return;
+  }
+  manual.push({name, firstDate: date});
+  cliSaveManual(manual);
+  // Merge into live list and re-sort
+  cliClientNames.push({name, firstDate: date, manual: true});
+  cliClientNames.sort((a,b) => (b.firstDate||'') < (a.firstDate||'') ? -1 : (b.firstDate||'') > (a.firstDate||'') ? 1 : 0);
+  cliHideAddForm();
+  cliRenderList();
+  rptPopulateTrustClients(cliClientNames.map(c=>c.name));
+  showToast('客户已添加: '+name);
+}
+
+function cliOnTabOpen(){
+  if(!cliLoaded) cliLoad();
+}
+
+async function cliLoad(){
+  if(!GAS_URL_BOOK_V2){ cliListMsg('GAS_URL_BOOK_V2 not configured'); return; }
+  cliListMsg('Loading…');
+  try{
+    const r = await bk2GetJson({action:'getEntries'});
+    if(!r.success) throw new Error(r.error||'Failed');
+    const entries = r.data||[];
+    // Build map: client_name → earliest entry_date
+    const firstDate = {};
+    entries.forEach(e=>{
+      (e.lines||[]).forEach(l=>{
+        const n = l.client_name||''; if(!n) return;
+        if(!firstDate[n] || e.entry_date < firstDate[n]) firstDate[n] = e.entry_date;
+      });
+    });
+    // Merge journal-derived clients with manually added ones
+    const manual = cliGetManual();
+    const merged = { ...firstDate };
+    manual.forEach(m=>{ if(!merged[m.name]) merged[m.name] = m.firstDate||''; });
+    // Sort by firstDate descending (most recent first)
+    cliClientNames = Object.keys(merged).map(n=>({
+      name: n,
+      firstDate: merged[n],
+      manual: !firstDate[n],
+    })).sort((a,b)=>(b.firstDate||'') < (a.firstDate||'') ? -1 : (b.firstDate||'') > (a.firstDate||'') ? 1 : 0);
+    cliLoaded = true;
+    cliRenderList();
+    // Also populate Trust Statement client dropdown
+    rptPopulateTrustClients(cliClientNames.map(c=>c.name));
+  }catch(e){
+    cliListMsg('Error: '+e.message);
+  }
+}
+
+function cliListMsg(msg){
+  document.getElementById('cli-tbody').innerHTML =
+    `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">${escHtml(msg)}</td></tr>`;
+}
+
+function cliFilterList(){
+  const q = (document.getElementById('cli-search')?.value||'').toLowerCase();
+  const filtered = q
+    ? cliClientNames.filter(c=>c.name.toLowerCase().includes(q))
+    : cliClientNames;
+  cliRenderRows(filtered);
+}
+
+function cliRenderList(){
+  document.getElementById('cli-search').value = '';
+  cliRenderRows(cliClientNames);
+}
+
+function cliRenderRows(list){
+  const tbody = document.getElementById('cli-tbody');
+  if(!list.length){ cliListMsg('No clients found'); return; }
+  tbody.innerHTML = list.map(c=>{
+    const safeName = escHtml(c.name).replace(/'/g,"\\'");
+    const manualTag = c.manual
+      ? `<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;margin-left:6px">手动</span>`
+      : '';
+    const delBtn = c.manual
+      ? `<button class="btn btn-secondary btn-sm" style="color:var(--red)" onclick="cliDeleteManual('${safeName}')">删除</button>`
+      : '';
+    return `<tr>
+      <td style="font-weight:600">${escHtml(c.name)}${manualTag}</td>
+      <td style="color:var(--muted);font-size:12px">${escHtml(c.firstDate||'')}</td>
+      <td style="text-align:right;white-space:nowrap;gap:6px;display:flex;justify-content:flex-end;padding:8px 12px">
+        ${delBtn}
+        <button class="btn btn-secondary btn-sm" onclick="cliOpenLedger('${safeName}')">View Ledger</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function cliDeleteManual(name){
+  if(!confirm('删除客户 "'+name+'"？')) return;
+  const manual = cliGetManual().filter(c=>c.name!==name);
+  cliSaveManual(manual);
+  cliClientNames = cliClientNames.filter(c=>c.name!==name);
+  cliRenderList();
+  rptPopulateTrustClients(cliClientNames.map(c=>c.name));
+  showToast('已删除: '+name);
+}
+
+function cliShowList(){
+  document.getElementById('cli-view-list').style.display   = '';
+  document.getElementById('cli-view-ledger').style.display = 'none';
+  cliCurrentClient = null;
+}
+
+function cliOpenLedger(name){
+  cliCurrentClient = name;
+  document.getElementById('cli-ledger-title').textContent = name;
+  document.getElementById('cli-met-trust').textContent   = '—';
+  document.getElementById('cli-met-ar').textContent      = '—';
+  document.getElementById('cli-met-revenue').textContent = '—';
+  document.getElementById('cli-view-list').style.display   = 'none';
+  document.getElementById('cli-view-ledger').style.display = '';
+  // Default: all time — clear dates
+  document.getElementById('cli-ledger-from').value = '';
+  document.getElementById('cli-ledger-to').value   = '';
+  cliLedgerLoad();
+}
+
+async function cliLedgerLoad(){
+  if(!cliCurrentClient){ showToast('No client selected'); return; }
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const dateFrom = document.getElementById('cli-ledger-from').value;
+  const dateTo   = document.getElementById('cli-ledger-to').value;
+  const params   = {action:'getClientLedger', clientName:cliCurrentClient};
+  if(dateFrom) params.dateFrom = dateFrom;
+  if(dateTo)   params.dateTo   = dateTo;
+  const tbody = document.getElementById('cli-ledger-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    // Update summary cards
+    document.getElementById('cli-met-trust').textContent   = '$'+fmt(d.trust_balance||0);
+    document.getElementById('cli-met-ar').textContent      = '$'+fmt(d.ar_balance||0);
+    document.getElementById('cli-met-revenue').textContent = '$'+fmt(d.total_revenue||0);
+    const rows = d.rows||[];
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No transactions found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(row=>`<tr>
+      <td style="white-space:nowrap">${escHtml(fmtDate(row.entry_date))}</td>
+      <td>${escHtml(row.entry_id||'')}</td>
+      <td style="font-size:12px">${escHtml(row.account_code||'')} ${escHtml(row.account_name||'')}</td>
+      <td class="memo-cell">${escHtml(row.memo||'')}</td>
+      <td style="text-align:right">${row.dr_cad?'$'+fmt(row.dr_cad):''}</td>
+      <td style="text-align:right">${row.cr_cad?'$'+fmt(row.cr_cad):''}</td>
+    </tr>`).join('');
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--red);padding:20px">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+
+// ═══════════════════════════════════════
+// === REPORTS ===
+// ═══════════════════════════════════════
+let rptCurrentTab = 'tb';
+
+function rptOnTabOpen(){
+  // Ensure Trust Statement client dropdown is populated
+  if(!cliLoaded) cliLoad();
+}
+
+function rptShowTab(tab){
+  rptCurrentTab = tab;
+  ['tb','is','bs','trust'].forEach(t=>{
+    document.getElementById('rpt-tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('rpt-view-'+t).style.display = t===tab ? '' : 'none';
+  });
+}
+
+// ── Trial Balance ──
+async function rptLoadTb(){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const asOf = document.getElementById('rpt-tb-date').value;
+  const params = {action:'getTrialBalance'};
+  if(asOf) params.asOfDate = asOf;
+  const tbody = document.getElementById('rpt-tb-tbody');
+  const tfoot = document.getElementById('rpt-tb-tfoot');
+  tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>';
+  tfoot.style.display='none';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const rows = r.data?.rows||[];
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No data.</td></tr>';
+      return;
+    }
+    let totDr=0, totCr=0;
+    tbody.innerHTML = rows.map(row=>{
+      const bal = Number(row.net_balance||0);
+      const isDebitNormal = row.normal_balance==='DR';
+      // Place in DR or CR column based on actual balance direction, not normal direction
+      // Positive DR-normal → DR col; negative DR-normal (contra) → CR col
+      // Positive CR-normal → CR col; negative CR-normal (contra) → DR col
+      if(bal >= 0){ if(isDebitNormal) totDr+=bal; else totCr+=bal; }
+      else         { if(isDebitNormal) totCr+=(-bal); else totDr+=(-bal); }
+      const balColor = bal > 0 ? 'color:var(--green)' : (bal < 0 ? 'color:var(--red)' : '');
+      return `<tr>
+        <td style="font-family:monospace">${escHtml(row.account_code)}</td>
+        <td>${escHtml(row.account_name)}</td>
+        <td>${escHtml(row.account_type||'')}</td>
+        <td style="text-align:right;font-weight:600;${balColor}">$${fmt(bal)}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('rpt-tb-tot-dr').textContent = '$'+fmt(totDr);
+    document.getElementById('rpt-tb-tot-cr').textContent = '$'+fmt(totCr);
+    tfoot.style.display='';
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--red);padding:20px">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+// ── Income Statement ──
+async function rptLoadIs(){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const dateFrom = document.getElementById('rpt-is-from').value;
+  const dateTo   = document.getElementById('rpt-is-to').value;
+  const params   = {action:'getIncomeStatement'};
+  if(dateFrom) params.dateFrom = dateFrom;
+  if(dateTo)   params.dateTo   = dateTo;
+  document.getElementById('rpt-is-card').style.display='none';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    const period = (d.date_from||'?')+' to '+(d.date_to||'?');
+    document.getElementById('rpt-is-period').textContent = 'Income Statement — '+period;
+    const revTbody = document.getElementById('rpt-is-rev-tbody');
+    revTbody.innerHTML = (d.revenue||[]).map(row=>
+      `<tr><td>${escHtml(row.account_code)} ${escHtml(row.account_name)}</td><td style="text-align:right">$${fmt(row.amount)}</td></tr>`
+    ).join('') || '<tr><td colspan="2" style="color:var(--muted)">No revenue accounts</td></tr>';
+    document.getElementById('rpt-is-tot-rev').textContent = '$'+fmt(d.total_revenue||0);
+    const expTbody = document.getElementById('rpt-is-exp-tbody');
+    expTbody.innerHTML = (d.expenses||[]).map(row=>
+      `<tr><td>${escHtml(row.account_code)} ${escHtml(row.account_name)}</td><td style="text-align:right">$${fmt(row.amount)}</td></tr>`
+    ).join('') || '<tr><td colspan="2" style="color:var(--muted)">No expense accounts</td></tr>';
+    document.getElementById('rpt-is-tot-exp').textContent = '$'+fmt(d.total_expenses||0);
+    const net = Number(d.net_income||0);
+    const netEl = document.getElementById('rpt-is-net');
+    netEl.textContent = (net<0?'-':'')+'$'+fmt(Math.abs(net));
+    netEl.style.color = net>=0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('rpt-is-card').style.display='';
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+// ── Balance Sheet ──
+async function rptLoadBs(){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const asOf   = document.getElementById('rpt-bs-date').value;
+  const params = {action:'getBalanceSheet'};
+  if(asOf) params.asOfDate = asOf;
+  document.getElementById('rpt-bs-card').style.display='none';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    document.getElementById('rpt-bs-title').textContent = 'Balance Sheet — as of '+(d.as_of_date||asOf||'today');
+    const renderRows = (rows)=>(rows||[]).map(row=>
+      `<tr><td>${escHtml(row.account_code)} ${escHtml(row.account_name)}</td><td style="text-align:right">$${fmt(row.balance)}</td></tr>`
+    ).join('') || '<tr><td colspan="2" style="color:var(--muted)">—</td></tr>';
+    document.getElementById('rpt-bs-assets-tbody').innerHTML = renderRows(d.assets);
+    document.getElementById('rpt-bs-liab-tbody').innerHTML   = renderRows(d.liabilities);
+    document.getElementById('rpt-bs-eq-tbody').innerHTML     = renderRows(d.equity);
+    document.getElementById('rpt-bs-tot-assets').textContent = '$'+fmt(d.total_assets||0);
+    document.getElementById('rpt-bs-tot-liab').textContent   = '$'+fmt(d.total_liabilities||0);
+    document.getElementById('rpt-bs-retained').textContent   = '$'+fmt(d.retained_earnings||0);
+    document.getElementById('rpt-bs-tot-eq').textContent     = '$'+fmt(d.total_equity||0);
+    const checkEl = document.getElementById('rpt-bs-check');
+    // Verify client-side as well (defense against API regressions)
+    const clientDiff = Math.abs(Number(d.total_assets||0) - (Number(d.total_liabilities||0) + Number(d.total_equity||0)));
+    const diff = Math.round(Math.max(Math.abs(Number(d.balance_check||0)), clientDiff) * 100) / 100;
+    if(diff < 0.01){
+      checkEl.textContent='✓ Balanced';
+      checkEl.style.cssText='background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:10px 14px;border-radius:6px;font-weight:700;font-size:13px';
+    } else {
+      checkEl.textContent='⚠ Out of balance by $'+fmt(diff);
+      checkEl.style.cssText='background:#fef2f2;color:var(--red);border:1px solid #fecaca;padding:10px 14px;border-radius:6px;font-weight:700;font-size:13px';
+    }
+    document.getElementById('rpt-bs-card').style.display='';
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+// ── Trust Statement ──
+function rptPopulateTrustClients(names){
+  const sel = document.getElementById('rpt-trust-client');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select client —</option>' +
+    names.map(n=>`<option value="${escHtml(n)}"${n===prev?' selected':''}>${escHtml(n)}</option>`).join('');
+}
+
+async function rptLoadTrust(){
+  if(!GAS_URL_BOOK_V2){ showToast('GAS_URL_BOOK_V2 not configured'); return; }
+  const clientName = document.getElementById('rpt-trust-client').value;
+  if(!clientName){ showToast('Select a client first'); return; }
+  const dateFrom = document.getElementById('rpt-trust-from').value;
+  const dateTo   = document.getElementById('rpt-trust-to').value;
+  const params   = {action:'getClientLedger', clientName};
+  if(dateFrom) params.dateFrom = dateFrom;
+  if(dateTo)   params.dateTo   = dateTo;
+  document.getElementById('rpt-trust-card').style.display='none';
+  try{
+    const r = await bk2GetJson(params);
+    if(!r.success) throw new Error(r.error||'Failed');
+    const d = r.data||{};
+    document.getElementById('rpt-trust-title').textContent = 'Trust Statement — '+clientName;
+    // Filter to 1100 (Trust Bank) rows only
+    const trustRows = (d.rows||[]).filter(row=> row.account_code==='1100');
+    let totalIn=0, totalOut=0;
+    // Build trust transaction rows — DR 1100 = money in, CR 1100 = money out
+    const rowsHtml = trustRows.map(row=>{
+      const drIn  = Number(row.dr_cad||0);
+      const crOut = Number(row.cr_cad||0);
+      totalIn  += drIn;
+      totalOut += crOut;
+      return `<tr>
+        <td style="white-space:nowrap">${escHtml(fmtDate(row.entry_date))}</td>
+        <td>${escHtml(row.entry_id||'')}</td>
+        <td class="memo-cell">${escHtml(row.memo||'')}</td>
+        <td style="text-align:right;color:var(--green)">${drIn?'$'+fmt(drIn):''}</td>
+        <td style="text-align:right;color:var(--red)">${crOut?'$'+fmt(crOut):''}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No trust transactions in this period.</td></tr>';
+    document.getElementById('rpt-trust-tbody').innerHTML = rowsHtml;
+    // closing = net trust balance per API (assumed all-time balance as of dateTo)
+    // opening = closing - net change during period (closing = opening + totalIn - totalOut)
+    totalIn  = Math.round(totalIn  * 100) / 100;
+    totalOut = Math.round(totalOut * 100) / 100;
+    const closing = Math.round(Number(d.trust_balance||0) * 100) / 100;
+    const opening = Math.round((closing - totalIn + totalOut) * 100) / 100;
+    document.getElementById('rpt-trust-open').textContent  = '$'+fmt(opening);
+    document.getElementById('rpt-trust-in').textContent    = '$'+fmt(totalIn);
+    document.getElementById('rpt-trust-out').textContent   = '$'+fmt(totalOut);
+    document.getElementById('rpt-trust-close').textContent = '$'+fmt(closing);
+    document.getElementById('rpt-trust-card').style.display='';
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  // Docket
+  document.getElementById('d-entryDate').value=today();
+  dRefreshDatalist();
+  dLoadDraft() || dAddWorkItem();
+
+  // Invoice defaults
+  document.getElementById('ck-invoiceDate').value=today();
+  ckSetDue(30);
+  // Restore ck-clientList from localStorage
+  const ckMem=JSON.parse(localStorage.getItem(CK_MEM_KEY)||'{}');
+  document.getElementById('ck-clientList').innerHTML=Object.values(ckMem).map(c=>`<option value="${escHtml(c.name)}">`).join('');
+
+  // Journal default date
+  document.getElementById('jnl-date').value=today();
+  jnlUpdateTotals();
+
+  // Reports default dates
+  document.getElementById('rpt-tb-date').value  = today();
+  document.getElementById('rpt-bs-date').value  = today();
+  document.getElementById('rpt-is-from').value  = '2025-06-01';
+  document.getElementById('rpt-is-to').value    = today();
+  document.getElementById('rpt-trust-to').value = today();
+});
+</script>
+</body>
+</html>
